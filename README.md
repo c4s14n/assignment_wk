@@ -28,3 +28,6 @@ lc_env  ➝  .env
 ```
 
 The `.env` file is required for running tests.
+
+## Bugs doc
+A detailed list of known issues is documented in QA_Bugs.pdf, available in the repository root.
