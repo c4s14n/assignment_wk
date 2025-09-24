@@ -1,0 +1,1091 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8"/>
+    <title id="head-title">report.html</title>
+      <style type="text/css">body {
+  font-family: Helvetica, Arial, sans-serif;
+  font-size: 12px;
+  /* do not increase min-width as some may use split screens */
+  min-width: 800px;
+  color: #999;
+}
+
+h1 {
+  font-size: 24px;
+  color: black;
+}
+
+h2 {
+  font-size: 16px;
+  color: black;
+}
+
+p {
+  color: black;
+}
+
+a {
+  color: #999;
+}
+
+table {
+  border-collapse: collapse;
+}
+
+/******************************
+ * SUMMARY INFORMATION
+ ******************************/
+#environment td {
+  padding: 5px;
+  border: 1px solid #e6e6e6;
+  vertical-align: top;
+}
+#environment tr:nth-child(odd) {
+  background-color: #f6f6f6;
+}
+#environment ul {
+  margin: 0;
+  padding: 0 20px;
+}
+
+/******************************
+ * TEST RESULT COLORS
+ ******************************/
+span.passed,
+.passed .col-result {
+  color: green;
+}
+
+span.skipped,
+span.xfailed,
+span.rerun,
+.skipped .col-result,
+.xfailed .col-result,
+.rerun .col-result {
+  color: orange;
+}
+
+span.error,
+span.failed,
+span.xpassed,
+.error .col-result,
+.failed .col-result,
+.xpassed .col-result {
+  color: red;
+}
+
+.col-links__extra {
+  margin-right: 3px;
+}
+
+/******************************
+ * RESULTS TABLE
+ *
+ * 1. Table Layout
+ * 2. Extra
+ * 3. Sorting items
+ *
+ ******************************/
+/*------------------
+ * 1. Table Layout
+ *------------------*/
+#results-table {
+  border: 1px solid #e6e6e6;
+  color: #999;
+  font-size: 12px;
+  width: 100%;
+}
+#results-table th,
+#results-table td {
+  padding: 5px;
+  border: 1px solid #e6e6e6;
+  text-align: left;
+}
+#results-table th {
+  font-weight: bold;
+}
+
+/*------------------
+ * 2. Extra
+ *------------------*/
+.logwrapper {
+  max-height: 230px;
+  overflow-y: scroll;
+  background-color: #e6e6e6;
+}
+.logwrapper.expanded {
+  max-height: none;
+}
+.logwrapper.expanded .logexpander:after {
+  content: "collapse [-]";
+}
+.logwrapper .logexpander {
+  z-index: 1;
+  position: sticky;
+  top: 10px;
+  width: max-content;
+  border: 1px solid;
+  border-radius: 3px;
+  padding: 5px 7px;
+  margin: 10px 0 10px calc(100% - 80px);
+  cursor: pointer;
+  background-color: #e6e6e6;
+}
+.logwrapper .logexpander:after {
+  content: "expand [+]";
+}
+.logwrapper .logexpander:hover {
+  color: #000;
+  border-color: #000;
+}
+.logwrapper .log {
+  min-height: 40px;
+  position: relative;
+  top: -50px;
+  height: calc(100% + 50px);
+  border: 1px solid #e6e6e6;
+  color: black;
+  display: block;
+  font-family: "Courier New", Courier, monospace;
+  padding: 5px;
+  padding-right: 80px;
+  white-space: pre-wrap;
+}
+
+div.media {
+  border: 1px solid #e6e6e6;
+  float: right;
+  height: 240px;
+  margin: 0 5px;
+  overflow: hidden;
+  width: 320px;
+}
+
+.media-container {
+  display: grid;
+  grid-template-columns: 25px auto 25px;
+  align-items: center;
+  flex: 1 1;
+  overflow: hidden;
+  height: 200px;
+}
+
+.media-container--fullscreen {
+  grid-template-columns: 0px auto 0px;
+}
+
+.media-container__nav--right,
+.media-container__nav--left {
+  text-align: center;
+  cursor: pointer;
+}
+
+.media-container__viewport {
+  cursor: pointer;
+  text-align: center;
+  height: inherit;
+}
+.media-container__viewport img,
+.media-container__viewport video {
+  object-fit: cover;
+  width: 100%;
+  max-height: 100%;
+}
+
+.media__name,
+.media__counter {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-around;
+  flex: 0 0 25px;
+  align-items: center;
+}
+
+.collapsible td:not(.col-links) {
+  cursor: pointer;
+}
+.collapsible td:not(.col-links):hover::after {
+  color: #bbb;
+  font-style: italic;
+  cursor: pointer;
+}
+
+.col-result {
+  width: 130px;
+}
+.col-result:hover::after {
+  content: " (hide details)";
+}
+
+.col-result.collapsed:hover::after {
+  content: " (show details)";
+}
+
+#environment-header h2:hover::after {
+  content: " (hide details)";
+  color: #bbb;
+  font-style: italic;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+#environment-header.collapsed h2:hover::after {
+  content: " (show details)";
+  color: #bbb;
+  font-style: italic;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+/*------------------
+ * 3. Sorting items
+ *------------------*/
+.sortable {
+  cursor: pointer;
+}
+.sortable.desc:after {
+  content: " ";
+  position: relative;
+  left: 5px;
+  bottom: -12.5px;
+  border: 10px solid #4caf50;
+  border-bottom: 0;
+  border-left-color: transparent;
+  border-right-color: transparent;
+}
+.sortable.asc:after {
+  content: " ";
+  position: relative;
+  left: 5px;
+  bottom: 12.5px;
+  border: 10px solid #4caf50;
+  border-top: 0;
+  border-left-color: transparent;
+  border-right-color: transparent;
+}
+
+.hidden, .summary__reload__button.hidden {
+  display: none;
+}
+
+.summary__data {
+  flex: 0 0 550px;
+}
+.summary__reload {
+  flex: 1 1;
+  display: flex;
+  justify-content: center;
+}
+.summary__reload__button {
+  flex: 0 0 300px;
+  display: flex;
+  color: white;
+  font-weight: bold;
+  background-color: #4caf50;
+  text-align: center;
+  justify-content: center;
+  align-items: center;
+  border-radius: 3px;
+  cursor: pointer;
+}
+.summary__reload__button:hover {
+  background-color: #46a049;
+}
+.summary__spacer {
+  flex: 0 0 550px;
+}
+
+.controls {
+  display: flex;
+  justify-content: space-between;
+}
+
+.filters,
+.collapse {
+  display: flex;
+  align-items: center;
+}
+.filters button,
+.collapse button {
+  color: #999;
+  border: none;
+  background: none;
+  cursor: pointer;
+  text-decoration: underline;
+}
+.filters button:hover,
+.collapse button:hover {
+  color: #ccc;
+}
+
+.filter__label {
+  margin-right: 10px;
+}
+
+      </style>
+    
+  </head>
+  <body>
+    <h1 id="title">report.html</h1>
+    <p>Report generated on 24-Sep-2025 at 21:08:25 by <a href="https://pypi.python.org/pypi/pytest-html">pytest-html</a>
+        v4.1.1</p>
+    <div id="environment-header">
+      <h2>Environment</h2>
+    </div>
+    <table id="environment"></table>
+    <!-- TEMPLATES -->
+      <template id="template_environment_row">
+      <tr>
+        <td></td>
+        <td></td>
+      </tr>
+    </template>
+    <template id="template_results-table__body--empty">
+      <tbody class="results-table-row">
+        <tr id="not-found-message">
+          <td colspan="4">No results found. Check the filters.</th>
+        </tr>
+    </template>
+    <template id="template_results-table__tbody">
+      <tbody class="results-table-row">
+        <tr class="collapsible">
+        </tr>
+        <tr class="extras-row">
+          <td class="extra" colspan="4">
+            <div class="extraHTML"></div>
+            <div class="media">
+              <div class="media-container">
+                  <div class="media-container__nav--left"><</div>
+                  <div class="media-container__viewport">
+                    <img src="" />
+                    <video controls>
+                      <source src="" type="video/mp4">
+                    </video>
+                  </div>
+                  <div class="media-container__nav--right">></div>
+                </div>
+                <div class="media__name"></div>
+                <div class="media__counter"></div>
+            </div>
+            <div class="logwrapper">
+              <div class="logexpander"></div>
+              <div class="log"></div>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </template>
+    <!-- END TEMPLATES -->
+    <div class="summary">
+      <div class="summary__data">
+        <h2>Summary</h2>
+        <div class="additional-summary prefix">
+        </div>
+        <p class="run-count">31 tests took 00:01:37.</p>
+        <p class="filter">(Un)check the boxes to filter the results.</p>
+        <div class="summary__reload">
+          <div class="summary__reload__button hidden" onclick="location.reload()">
+            <div>There are still tests running. <br />Reload this page to get the latest results!</div>
+          </div>
+        </div>
+        <div class="summary__spacer"></div>
+        <div class="controls">
+          <div class="filters">
+            <input checked="true" class="filter" name="filter_checkbox" type="checkbox" data-test-result="failed" />
+            <span class="failed">16 Failed,</span>
+            <input checked="true" class="filter" name="filter_checkbox" type="checkbox" data-test-result="passed" />
+            <span class="passed">15 Passed,</span>
+            <input checked="true" class="filter" name="filter_checkbox" type="checkbox" data-test-result="skipped" disabled/>
+            <span class="skipped">0 Skipped,</span>
+            <input checked="true" class="filter" name="filter_checkbox" type="checkbox" data-test-result="xfailed" disabled/>
+            <span class="xfailed">0 Expected failures,</span>
+            <input checked="true" class="filter" name="filter_checkbox" type="checkbox" data-test-result="xpassed" disabled/>
+            <span class="xpassed">0 Unexpected passes,</span>
+            <input checked="true" class="filter" name="filter_checkbox" type="checkbox" data-test-result="error" disabled/>
+            <span class="error">0 Errors,</span>
+            <input checked="true" class="filter" name="filter_checkbox" type="checkbox" data-test-result="rerun" disabled/>
+            <span class="rerun">0 Reruns</span>
+          </div>
+          <div class="collapse">
+            <button id="show_all_details">Show all details</button>&nbsp;/&nbsp;<button id="hide_all_details">Hide all details</button>
+          </div>
+        </div>
+      </div>
+      <div class="additional-summary summary">
+      </div>
+      <div class="additional-summary postfix">
+      </div>
+    </div>
+    <table id="results-table">
+      <thead id="results-table-head">
+        <tr>
+          <th class="sortable" data-column-type="result">Result</th>
+          <th class="sortable" data-column-type="testId">Test</th>
+          <th class="sortable" data-column-type="duration">Duration</th>
+          <th>Links</th>
+        </tr>
+      </thead>
+    </table>
+  </body>
+  <footer>
+    <div id="data-container" data-jsonblob="{&#34;environment&#34;: {&#34;Python&#34;: &#34;3.11.9&#34;, &#34;Platform&#34;: &#34;Linux-6.8.11-amd64-x86_64-with-glibc2.41&#34;, &#34;Packages&#34;: {&#34;pytest&#34;: &#34;8.4.2&#34;, &#34;pluggy&#34;: &#34;1.6.0&#34;}, &#34;Plugins&#34;: {&#34;check&#34;: &#34;2.5.4&#34;, &#34;html&#34;: &#34;4.1.1&#34;, &#34;Faker&#34;: &#34;37.8.0&#34;, &#34;metadata&#34;: &#34;3.1.1&#34;}, &#34;JAVA_HOME&#34;: &#34;/usr/lib/jvm/java-21-openjdk-amd64&#34;}, &#34;tests&#34;: {&#34;tests/test_api.py::test_positive_get_users[all_users]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/test_api.py::test_positive_get_users[all_users]&#34;, &#34;duration&#34;: &#34;21 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_api.py::test_positive_get_users[all_users]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;21 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;------------------------------ Captured log setup ------------------------------\nINFO     conftest: Providing UserApiClient\n\n------------------------------ Captured log call -------------------------------\nINFO     user_api_client: GET &amp;#x27;http://localhost:3003/user/&amp;#x27; params: None\nINFO     validation_steps: ..Validating response code\nINFO     validation_steps: ..Validating response time is less then 500\nINFO     validation_steps: ..Validating content-type\nINFO     validation_steps: ..Validating response is JSON\nINFO     validation_steps: ..Validating response Schema\nINFO     validation_steps: ..Validating response is non-empty\n\n---------------------------- Captured log teardown -----------------------------\nINFO     conftest: Running UserApiClient context cleanup\nINFO     user_api_client: Context cleaning...&#34;}], &#34;tests/test_api.py::test_positive_get_users[single_user_by_id]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/test_api.py::test_positive_get_users[single_user_by_id]&#34;, &#34;duration&#34;: &#34;18 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_api.py::test_positive_get_users[single_user_by_id]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;18 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;------------------------------ Captured log setup ------------------------------\nINFO     conftest: Providing UserApiClient\n\n------------------------------ Captured log call -------------------------------\nINFO     user_api_client: GET &amp;#x27;http://localhost:3003/user/&amp;#x27; params: {&amp;#x27;id&amp;#x27;: 1}\nINFO     validation_steps: ..Validating response code\nINFO     validation_steps: ..Validating response time is less then 500\nINFO     validation_steps: ..Validating content-type\nINFO     validation_steps: ..Validating response is JSON\nINFO     validation_steps: ..Validating response Schema\nINFO     validation_steps: ..Validating response is non-empty\n\n---------------------------- Captured log teardown -----------------------------\nINFO     conftest: Running UserApiClient context cleanup\nINFO     user_api_client: Context cleaning...&#34;}], &#34;tests/test_api.py::test_positive_get_users[multiple_user_by_id]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/test_api.py::test_positive_get_users[multiple_user_by_id]&#34;, &#34;duration&#34;: &#34;17 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_api.py::test_positive_get_users[multiple_user_by_id]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;17 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;------------------------------ Captured log setup ------------------------------\nINFO     conftest: Providing UserApiClient\n\n------------------------------ Captured log call -------------------------------\nINFO     user_api_client: GET &amp;#x27;http://localhost:3003/user/&amp;#x27; params: {&amp;#x27;id&amp;#x27;: [1, 2, 3]}\nINFO     validation_steps: ..Validating response code\nINFO     validation_steps: ..Validating response time is less then 500\nINFO     validation_steps: ..Validating content-type\nINFO     validation_steps: ..Validating response is JSON\nINFO     validation_steps: ..Validating response Schema\nINFO     validation_steps: ..Validating response is non-empty\n\n---------------------------- Captured log teardown -----------------------------\nINFO     conftest: Running UserApiClient context cleanup\nINFO     user_api_client: Context cleaning...&#34;}], &#34;tests/test_api.py::test_negative_get_users[tolerated_resource_absence_200_code_but_empty]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Failed&#34;, &#34;testId&#34;: &#34;tests/test_api.py::test_negative_get_users[tolerated_resource_absence_200_code_but_empty]&#34;, &#34;duration&#34;: &#34;84 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Failed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_api.py::test_negative_get_users[tolerated_resource_absence_200_code_but_empty]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;84 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;FAILURE: check False == True: Expected empty object, got: [UserModel(id=1, name=&amp;#x27;John&amp;#x27;, username=&amp;#x27;johnsonjacqueline&amp;#x27;, email=&amp;#x27;wick@wick.com&amp;#x27;, phone=&amp;#x27;414-441-6823x941&amp;#x27;)]\ntest_api.py:56 in test_negative_get_users() -&amp;gt; validate_response(response=resp,\n../src/steps/validation_steps.py:137 in validate_response() -&amp;gt; check.equal(\n\n------------------------------------------------------------\nFailed Checks: 1\n\n------------------------------ Captured log setup ------------------------------\nINFO     conftest: Providing UserApiClient\n\n------------------------------ Captured log call -------------------------------\nINFO     user_api_client: GET &amp;#x27;http://localhost:3003/user/&amp;#x27; params: {&amp;#x27;id&amp;#x27;: 1}\nINFO     validation_steps: ..Validating response code\nINFO     validation_steps: ..Validating response time is less then 100\nINFO     validation_steps: ..Validating content-type\nINFO     validation_steps: ..Validating response is JSON\nINFO     validation_steps: ..Validating response Schema\nINFO     validation_steps: ..Validating response is empty\n\n---------------------------- Captured log teardown -----------------------------\nINFO     conftest: Running UserApiClient context cleanup\nINFO     user_api_client: Context cleaning...&#34;}], &#34;tests/test_api.py::test_negative_get_users[user_not_exist]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Failed&#34;, &#34;testId&#34;: &#34;tests/test_api.py::test_negative_get_users[user_not_exist]&#34;, &#34;duration&#34;: &#34;16 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Failed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_api.py::test_negative_get_users[user_not_exist]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;16 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;FAILURE: check bool(False): Expected HTTP 404, got 200\ntest_api.py:56 in test_negative_get_users() -&amp;gt; validate_response(response=resp,\n../src/steps/validation_steps.py:111 in validate_response() -&amp;gt; validate_status_and_time(response, expected_status, max_response_ms)\n../src/steps/validation_steps.py:77 in validate_status_and_time() -&amp;gt; check.is_true(\n\nFAILURE: check False == True: Expected empty object, got: [UserModel(id=1, name=&amp;#x27;John&amp;#x27;, username=&amp;#x27;johnsonjacqueline&amp;#x27;, email=&amp;#x27;wick@wick.com&amp;#x27;, phone=&amp;#x27;414-441-6823x941&amp;#x27;)]\n------------------------------------------------------------\nFailed Checks: 2\n\n------------------------------ Captured log setup ------------------------------\nINFO     conftest: Providing UserApiClient\n\n------------------------------ Captured log call -------------------------------\nINFO     user_api_client: GET &amp;#x27;http://localhost:3003/user/&amp;#x27; params: {&amp;#x27;id&amp;#x27;: 1}\nINFO     validation_steps: ..Validating response code\nINFO     validation_steps: ..Validating response time is less then 100\nINFO     validation_steps: ..Validating content-type\nINFO     validation_steps: ..Validating response is JSON\nINFO     validation_steps: ..Validating response Schema\nINFO     validation_steps: ..Validating response is empty\n\n---------------------------- Captured log teardown -----------------------------\nINFO     conftest: Running UserApiClient context cleanup\nINFO     user_api_client: Context cleaning...&#34;}], &#34;tests/test_api.py::test_negative_get_users[bad_id_string]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Failed&#34;, &#34;testId&#34;: &#34;tests/test_api.py::test_negative_get_users[bad_id_string]&#34;, &#34;duration&#34;: &#34;23 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Failed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_api.py::test_negative_get_users[bad_id_string]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;23 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;FAILURE: check bool(False): Expected HTTP {400, 422}, got 200\ntest_api.py:56 in test_negative_get_users() -&amp;gt; validate_response(response=resp,\n../src/steps/validation_steps.py:111 in validate_response() -&amp;gt; validate_status_and_time(response, expected_status, max_response_ms)\n../src/steps/validation_steps.py:77 in validate_status_and_time() -&amp;gt; check.is_true(\n\n------------------------------------------------------------\nFailed Checks: 1\n\n------------------------------ Captured log setup ------------------------------\nINFO     conftest: Providing UserApiClient\n\n------------------------------ Captured log call -------------------------------\nINFO     user_api_client: GET &amp;#x27;http://localhost:3003/user/&amp;#x27; params: {&amp;#x27;id&amp;#x27;: &amp;#x27;string&amp;#x27;}\nINFO     validation_steps: ..Validating response code\nINFO     validation_steps: ..Validating response time is less then 100\nINFO     validation_steps: ..Validating content-type\nINFO     validation_steps: ..Validating response is JSON\nINFO     validation_steps: ..Validating response Schema\nINFO     validation_steps: ..Validating response is empty\n\n---------------------------- Captured log teardown -----------------------------\nINFO     conftest: Running UserApiClient context cleanup\nINFO     user_api_client: Context cleaning...&#34;}], &#34;tests/test_api.py::test_negative_get_users[bad_id_symbol]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Failed&#34;, &#34;testId&#34;: &#34;tests/test_api.py::test_negative_get_users[bad_id_symbol]&#34;, &#34;duration&#34;: &#34;21 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Failed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_api.py::test_negative_get_users[bad_id_symbol]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;21 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;FAILURE: check bool(False): Expected HTTP {400, 422}, got 200\ntest_api.py:56 in test_negative_get_users() -&amp;gt; validate_response(response=resp,\n../src/steps/validation_steps.py:111 in validate_response() -&amp;gt; validate_status_and_time(response, expected_status, max_response_ms)\n../src/steps/validation_steps.py:77 in validate_status_and_time() -&amp;gt; check.is_true(\n\n------------------------------------------------------------\nFailed Checks: 1\n\n------------------------------ Captured log setup ------------------------------\nINFO     conftest: Providing UserApiClient\n\n------------------------------ Captured log call -------------------------------\nINFO     user_api_client: GET &amp;#x27;http://localhost:3003/user/&amp;#x27; params: {&amp;#x27;id&amp;#x27;: &amp;#x27;!#&amp;#x27;}\nINFO     validation_steps: ..Validating response code\nINFO     validation_steps: ..Validating response time is less then 100\nINFO     validation_steps: ..Validating content-type\nINFO     validation_steps: ..Validating response is JSON\nINFO     validation_steps: ..Validating response Schema\nINFO     validation_steps: ..Validating response is empty\n\n---------------------------- Captured log teardown -----------------------------\nINFO     conftest: Running UserApiClient context cleanup\nINFO     user_api_client: Context cleaning...&#34;}], &#34;tests/test_api.py::test_negative_get_users[bad_id_negative]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Failed&#34;, &#34;testId&#34;: &#34;tests/test_api.py::test_negative_get_users[bad_id_negative]&#34;, &#34;duration&#34;: &#34;23 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Failed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_api.py::test_negative_get_users[bad_id_negative]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;23 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;FAILURE: check bool(False): Expected HTTP {400, 422}, got 200\ntest_api.py:56 in test_negative_get_users() -&amp;gt; validate_response(response=resp,\n../src/steps/validation_steps.py:111 in validate_response() -&amp;gt; validate_status_and_time(response, expected_status, max_response_ms)\n../src/steps/validation_steps.py:77 in validate_status_and_time() -&amp;gt; check.is_true(\n\n------------------------------------------------------------\nFailed Checks: 1\n\n------------------------------ Captured log setup ------------------------------\nINFO     conftest: Providing UserApiClient\n\n------------------------------ Captured log call -------------------------------\nINFO     user_api_client: GET &amp;#x27;http://localhost:3003/user/&amp;#x27; params: {&amp;#x27;id&amp;#x27;: -82}\nINFO     validation_steps: ..Validating response code\nINFO     validation_steps: ..Validating response time is less then 100\nINFO     validation_steps: ..Validating content-type\nINFO     validation_steps: ..Validating response is JSON\nINFO     validation_steps: ..Validating response Schema\nINFO     validation_steps: ..Validating response is empty\n\n---------------------------- Captured log teardown -----------------------------\nINFO     conftest: Running UserApiClient context cleanup\nINFO     user_api_client: Context cleaning...&#34;}], &#34;tests/test_api.py::test_negative_get_users[bad_id_space]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Failed&#34;, &#34;testId&#34;: &#34;tests/test_api.py::test_negative_get_users[bad_id_space]&#34;, &#34;duration&#34;: &#34;26 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Failed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_api.py::test_negative_get_users[bad_id_space]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;26 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;FAILURE: check bool(False): Expected HTTP {400, 422}, got 200\ntest_api.py:56 in test_negative_get_users() -&amp;gt; validate_response(response=resp,\n../src/steps/validation_steps.py:111 in validate_response() -&amp;gt; validate_status_and_time(response, expected_status, max_response_ms)\n../src/steps/validation_steps.py:77 in validate_status_and_time() -&amp;gt; check.is_true(\n\n------------------------------------------------------------\nFailed Checks: 1\n\n------------------------------ Captured log setup ------------------------------\nINFO     conftest: Providing UserApiClient\n\n------------------------------ Captured log call -------------------------------\nINFO     user_api_client: GET &amp;#x27;http://localhost:3003/user/&amp;#x27; params: {&amp;#x27;id&amp;#x27;: &amp;#x27; &amp;#x27;}\nINFO     validation_steps: ..Validating response code\nINFO     validation_steps: ..Validating response time is less then 100\nINFO     validation_steps: ..Validating content-type\nINFO     validation_steps: ..Validating response is JSON\nINFO     validation_steps: ..Validating response Schema\nINFO     validation_steps: ..Validating response is empty\n\n---------------------------- Captured log teardown -----------------------------\nINFO     conftest: Running UserApiClient context cleanup\nINFO     user_api_client: Context cleaning...&#34;}], &#34;tests/test_api.py::test_create_api_user[valid_random_user]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/test_api.py::test_create_api_user[valid_random_user]&#34;, &#34;duration&#34;: &#34;26 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_api.py::test_create_api_user[valid_random_user]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;26 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;------------------------------ Captured log setup ------------------------------\nINFO     conftest: Providing UserApiClient\n\n------------------------------ Captured log call -------------------------------\nINFO     user_api_client: POST &amp;#x27;http://localhost:3003/user/&amp;#x27; json: {&amp;#x27;name&amp;#x27;: &amp;#x27;Terri&amp;#x27;, &amp;#x27;username&amp;#x27;: &amp;#x27;hamiltonthomas&amp;#x27;, &amp;#x27;email&amp;#x27;: &amp;#x27;christophercrawford@example.org&amp;#x27;, &amp;#x27;phone&amp;#x27;: &amp;#x27;881-756-6007&amp;#x27;}\nINFO     user_api_client: Tracked created id=21\nINFO     validation_steps: ..Validating response code\nINFO     validation_steps: ..Validating response time is less then 500\nINFO     validation_steps: ..Validating content-type\nINFO     validation_steps: ..Validating response is JSON\nINFO     validation_steps: ..Validating response Schema\nINFO     validation_steps: ..Validating response is non-empty\n\n---------------------------- Captured log teardown -----------------------------\nINFO     conftest: Running UserApiClient context cleanup\nINFO     user_api_client: Context cleaning...\nINFO     user_api_client: DELETE &amp;#x27;http://localhost:3003/user/21&amp;#x27;&#34;}], &#34;tests/test_api.py::test_create_api_user[invalid_email]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Failed&#34;, &#34;testId&#34;: &#34;tests/test_api.py::test_create_api_user[invalid_email]&#34;, &#34;duration&#34;: &#34;36 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Failed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_api.py::test_create_api_user[invalid_email]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;36 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;FAILURE: check bool(False): Expected HTTP {400, 422}, got 201\ntest_api.py:78 in test_create_api_user() -&amp;gt; validate_response(\n../src/steps/validation_steps.py:111 in validate_response() -&amp;gt; validate_status_and_time(response, expected_status, max_response_ms)\n../src/steps/validation_steps.py:77 in validate_status_and_time() -&amp;gt; check.is_true(\n\n------------------------------------------------------------\nFailed Checks: 1\n\n------------------------------ Captured log setup ------------------------------\nINFO     conftest: Providing UserApiClient\n\n------------------------------ Captured log call -------------------------------\nINFO     user_api_client: POST &amp;#x27;http://localhost:3003/user/&amp;#x27; json: {&amp;#x27;name&amp;#x27;: &amp;#x27;Elizabeth&amp;#x27;, &amp;#x27;username&amp;#x27;: &amp;#x27;robinsonjo&amp;#x27;, &amp;#x27;email&amp;#x27;: &amp;#x27;not-an-email&amp;#x27;, &amp;#x27;phone&amp;#x27;: &amp;#x27;(292)212-5867&amp;#x27;}\nINFO     user_api_client: Tracked created id=21\nINFO     validation_steps: ..Validating response code\nINFO     validation_steps: ..Validating response time is less then 500\nINFO     validation_steps: ..Validating content-type\nINFO     validation_steps: ..Validating response is JSON\nINFO     validation_steps: ..Validating response Schema\nINFO     validation_steps: ..Validating response is non-empty\n\n---------------------------- Captured log teardown -----------------------------\nINFO     conftest: Running UserApiClient context cleanup\nINFO     user_api_client: Context cleaning...\nINFO     user_api_client: DELETE &amp;#x27;http://localhost:3003/user/21&amp;#x27;&#34;}], &#34;tests/test_api.py::test_create_api_user[empty_username]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Failed&#34;, &#34;testId&#34;: &#34;tests/test_api.py::test_create_api_user[empty_username]&#34;, &#34;duration&#34;: &#34;33 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Failed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_api.py::test_create_api_user[empty_username]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;33 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;FAILURE: check bool(False): Expected HTTP 400, got 201\ntest_api.py:78 in test_create_api_user() -&amp;gt; validate_response(\n../src/steps/validation_steps.py:111 in validate_response() -&amp;gt; validate_status_and_time(response, expected_status, max_response_ms)\n../src/steps/validation_steps.py:77 in validate_status_and_time() -&amp;gt; check.is_true(\n\n------------------------------------------------------------\nFailed Checks: 1\n\n------------------------------ Captured log setup ------------------------------\nINFO     conftest: Providing UserApiClient\n\n------------------------------ Captured log call -------------------------------\nINFO     user_api_client: POST &amp;#x27;http://localhost:3003/user/&amp;#x27; json: {&amp;#x27;name&amp;#x27;: &amp;#x27;John&amp;#x27;, &amp;#x27;username&amp;#x27;: &amp;#x27;&amp;#x27;, &amp;#x27;email&amp;#x27;: &amp;#x27;cmurphy@example.com&amp;#x27;, &amp;#x27;phone&amp;#x27;: &amp;#x27;495-559-0556x14466&amp;#x27;}\nINFO     user_api_client: Tracked created id=21\nINFO     validation_steps: ..Validating response code\nINFO     validation_steps: ..Validating response time is less then 500\nINFO     validation_steps: ..Validating content-type\nINFO     validation_steps: ..Validating response is JSON\nINFO     validation_steps: ..Validating response Schema\nINFO     validation_steps: ..Validating response is non-empty\n\n---------------------------- Captured log teardown -----------------------------\nINFO     conftest: Running UserApiClient context cleanup\nINFO     user_api_client: Context cleaning...\nINFO     user_api_client: DELETE &amp;#x27;http://localhost:3003/user/21&amp;#x27;&#34;}], &#34;tests/test_api.py::test_create_api_user[bad_phone_format]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Failed&#34;, &#34;testId&#34;: &#34;tests/test_api.py::test_create_api_user[bad_phone_format]&#34;, &#34;duration&#34;: &#34;43 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Failed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_api.py::test_create_api_user[bad_phone_format]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;43 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;FAILURE: check bool(False): Expected HTTP {400, 422}, got 201\ntest_api.py:78 in test_create_api_user() -&amp;gt; validate_response(\n../src/steps/validation_steps.py:111 in validate_response() -&amp;gt; validate_status_and_time(response, expected_status, max_response_ms)\n../src/steps/validation_steps.py:77 in validate_status_and_time() -&amp;gt; check.is_true(\n\n------------------------------------------------------------\nFailed Checks: 1\n\n------------------------------ Captured log setup ------------------------------\nINFO     conftest: Providing UserApiClient\n\n------------------------------ Captured log call -------------------------------\nINFO     user_api_client: POST &amp;#x27;http://localhost:3003/user/&amp;#x27; json: {&amp;#x27;name&amp;#x27;: &amp;#x27;James&amp;#x27;, &amp;#x27;username&amp;#x27;: &amp;#x27;mccallnorman&amp;#x27;, &amp;#x27;email&amp;#x27;: &amp;#x27;calebmoore@example.net&amp;#x27;, &amp;#x27;phone&amp;#x27;: &amp;#x27;somestring&amp;#x27;}\nINFO     user_api_client: Tracked created id=21\nINFO     validation_steps: ..Validating response code\nINFO     validation_steps: ..Validating response time is less then 500\nINFO     validation_steps: ..Validating content-type\nINFO     validation_steps: ..Validating response is JSON\nINFO     validation_steps: ..Validating response Schema\nINFO     validation_steps: ..Validating response is non-empty\n\n---------------------------- Captured log teardown -----------------------------\nINFO     conftest: Running UserApiClient context cleanup\nINFO     user_api_client: Context cleaning...\nINFO     user_api_client: DELETE &amp;#x27;http://localhost:3003/user/21&amp;#x27;&#34;}], &#34;tests/test_api.py::test_create_api_user[null_phone]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Failed&#34;, &#34;testId&#34;: &#34;tests/test_api.py::test_create_api_user[null_phone]&#34;, &#34;duration&#34;: &#34;45 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Failed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_api.py::test_create_api_user[null_phone]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;45 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;FAILURE: check bool(False): Expected HTTP {400, 422}, got 201\ntest_api.py:78 in test_create_api_user() -&amp;gt; validate_response(\n../src/steps/validation_steps.py:111 in validate_response() -&amp;gt; validate_status_and_time(response, expected_status, max_response_ms)\n../src/steps/validation_steps.py:77 in validate_status_and_time() -&amp;gt; check.is_true(\n\n------------------------------------------------------------\nFailed Checks: 1\n------------------------------------------------------------\nresponse = &amp;lt;Response [201]&amp;gt;, expected_model = &amp;lt;class &amp;#x27;src.models.user_model.UserModel&amp;#x27;&amp;gt;, expected_status = {400, 422}\n\n    def validate_response(\n            response: Response,\n            expected_model: Any,\n            expected_status: Union[int, Iterable[int]],\n            *,\n            max_response_ms: int = 500,\n            expect_empty: Optional[bool] = False,\n            many: Literal[True, False, &amp;quot;auto&amp;quot;] = &amp;quot;auto&amp;quot;,\n    ):\n        &amp;quot;&amp;quot;&amp;quot;\n        High-level validation:\n          1) validates status/time (soft asserts)\n          2) parses JSON\n          3) validates schema (hard fail)\n    \n        Returns the parsed/validated object(s).\n        &amp;quot;&amp;quot;&amp;quot;\n        validate_status_and_time(response, expected_status, max_response_ms)\n        if response.status_code == 204:\n            pytest.fail(&amp;quot;Got 204 No Content but attempted to validate a body.&amp;quot;)\n    \n        log.info(f&amp;quot;..Validating response is JSON&amp;quot;)\n        try:\n            payload = response.json()\n        except ValueError as e:\n            pytest.fail(f&amp;quot;Invalid JSON body: {e}&amp;quot;)\n    \n        log.info(f&amp;quot;..Validating response Schema&amp;quot;)\n        if many == &amp;quot;auto&amp;quot;:\n            many = isinstance(payload, list)\n        try:\n            validator = TypeAdapter(list[expected_model] if many else expected_model)\n&amp;gt;           parsed = validator.validate_python(payload)\n                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n\n../src/steps/validation_steps.py:126: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ \n\nself = TypeAdapter(UserModel), object = {&amp;#x27;email&amp;#x27;: &amp;#x27;bbruce@example.org&amp;#x27;, &amp;#x27;id&amp;#x27;: 21, &amp;#x27;name&amp;#x27;: &amp;#x27;Jacqueline&amp;#x27;, &amp;#x27;phone&amp;#x27;: None, ...}\n\n    def validate_python(\n        self,\n        object: Any,\n        /,\n        *,\n        strict: bool | None = None,\n        from_attributes: bool | None = None,\n        context: dict[str, Any] | None = None,\n        experimental_allow_partial: bool | Literal[&amp;#x27;off&amp;#x27;, &amp;#x27;on&amp;#x27;, &amp;#x27;trailing-strings&amp;#x27;] = False,\n        by_alias: bool | None = None,\n        by_name: bool | None = None,\n    ) -&amp;gt; T:\n        &amp;quot;&amp;quot;&amp;quot;Validate a Python object against the model.\n    \n        Args:\n            object: The Python object to validate against the model.\n            strict: Whether to strictly check types.\n            from_attributes: Whether to extract data from object attributes.\n            context: Additional context to pass to the validator.\n            experimental_allow_partial: **Experimental** whether to enable\n                [partial validation](../concepts/experimental.md#partial-validation), e.g. to process streams.\n                * False / &amp;#x27;off&amp;#x27;: Default behavior, no partial validation.\n                * True / &amp;#x27;on&amp;#x27;: Enable partial validation.\n                * &amp;#x27;trailing-strings&amp;#x27;: Enable partial validation and allow trailing strings in the input.\n            by_alias: Whether to use the field&amp;#x27;s alias when validating against the provided input data.\n            by_name: Whether to use the field&amp;#x27;s name when validating against the provided input data.\n    \n        !!! note\n            When using `TypeAdapter` with a Pydantic `dataclass`, the use of the `from_attributes`\n            argument is not supported.\n    \n        Returns:\n            The validated object.\n        &amp;quot;&amp;quot;&amp;quot;\n        if by_alias is False and by_name is not True:\n            raise PydanticUserError(\n                &amp;#x27;At least one of `by_alias` or `by_name` must be set to True.&amp;#x27;,\n                code=&amp;#x27;validate-by-alias-and-name-false&amp;#x27;,\n            )\n    \n&amp;gt;       return self.validator.validate_python(\n            object,\n            strict=strict,\n            from_attributes=from_attributes,\n            context=context,\n            allow_partial=experimental_allow_partial,\n            by_alias=by_alias,\n            by_name=by_name,\n        )\nE       pydantic_core._pydantic_core.ValidationError: 1 validation error for UserModel\nE       phone\nE         Input should be a valid string [type=string_type, input_value=None, input_type=NoneType]\nE           For further information visit https://errors.pydantic.dev/2.11/v/string_type\n\n../venv/lib/python3.11/site-packages/pydantic/type_adapter.py:421: ValidationError\n\nDuring handling of the above exception, another exception occurred:\n\napi_client = &amp;lt;src.wrappers.user_api_client.UserApiClient object at 0x7f7e8ba001d0&amp;gt;, user_payload = {&amp;#x27;email&amp;#x27;: &amp;#x27;bbruce@example.org&amp;#x27;, &amp;#x27;name&amp;#x27;: &amp;#x27;Jacqueline&amp;#x27;, &amp;#x27;phone&amp;#x27;: None, &amp;#x27;username&amp;#x27;: &amp;#x27;ijohnson&amp;#x27;}, expected_status = {400, 422}\n\n    @pytest.mark.parametrize(\n        &amp;quot;user_payload, expected_status&amp;quot;,\n        [\n            pytest.param({}, 201, id=&amp;quot;valid_random_user&amp;quot;),\n            pytest.param({&amp;quot;email&amp;quot;: &amp;quot;not-an-email&amp;quot;}, {400, 422}, id=&amp;quot;invalid_email&amp;quot;),\n            pytest.param({&amp;quot;username&amp;quot;: &amp;quot;&amp;quot;}, 400, id=&amp;quot;empty_username&amp;quot;),\n            pytest.param({&amp;quot;phone&amp;quot;: &amp;quot;somestring&amp;quot;}, {400, 422}, id=&amp;quot;bad_phone_format&amp;quot;),\n            pytest.param({&amp;quot;phone&amp;quot;: None}, {400, 422}, id=&amp;quot;null_phone&amp;quot;),\n            pytest.param({&amp;quot;name&amp;quot;: &amp;quot; &amp;quot;}, 400, id=&amp;quot;empty_name&amp;quot;),\n        ],\n        indirect=[&amp;quot;user_payload&amp;quot;],\n    )\n    def test_create_api_user(api_client, user_payload, expected_status):\n        resp = api_client.post(&amp;quot;/user/&amp;quot;, json=user_payload)\n    \n&amp;gt;       validate_response(\n            response=resp,\n            expected_model=UserModel,\n            expected_status=expected_status,\n            max_response_ms=500,\n            expect_empty=False\n        )\n\ntest_api.py:78: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ \n\nresponse = &amp;lt;Response [201]&amp;gt;, expected_model = &amp;lt;class &amp;#x27;src.models.user_model.UserModel&amp;#x27;&amp;gt;, expected_status = {400, 422}\n\n    def validate_response(\n            response: Response,\n            expected_model: Any,\n            expected_status: Union[int, Iterable[int]],\n            *,\n            max_response_ms: int = 500,\n            expect_empty: Optional[bool] = False,\n            many: Literal[True, False, &amp;quot;auto&amp;quot;] = &amp;quot;auto&amp;quot;,\n    ):\n        &amp;quot;&amp;quot;&amp;quot;\n        High-level validation:\n          1) validates status/time (soft asserts)\n          2) parses JSON\n          3) validates schema (hard fail)\n    \n        Returns the parsed/validated object(s).\n        &amp;quot;&amp;quot;&amp;quot;\n        validate_status_and_time(response, expected_status, max_response_ms)\n        if response.status_code == 204:\n            pytest.fail(&amp;quot;Got 204 No Content but attempted to validate a body.&amp;quot;)\n    \n        log.info(f&amp;quot;..Validating response is JSON&amp;quot;)\n        try:\n            payload = response.json()\n        except ValueError as e:\n            pytest.fail(f&amp;quot;Invalid JSON body: {e}&amp;quot;)\n    \n        log.info(f&amp;quot;..Validating response Schema&amp;quot;)\n        if many == &amp;quot;auto&amp;quot;:\n            many = isinstance(payload, list)\n        try:\n            validator = TypeAdapter(list[expected_model] if many else expected_model)\n            parsed = validator.validate_python(payload)\n        except Exception as e:\n&amp;gt;           pytest.fail(f&amp;quot;Schema validation failed: {e}&amp;quot;)\nE           Failed: Schema validation failed: 1 validation error for UserModel\nE           phone\nE             Input should be a valid string [type=string_type, input_value=None, input_type=NoneType]\nE               For further information visit https://errors.pydantic.dev/2.11/v/string_type\n\n../src/steps/validation_steps.py:128: Failed\n\n------------------------------ Captured log setup ------------------------------\nINFO     conftest: Providing UserApiClient\n\n------------------------------ Captured log call -------------------------------\nINFO     user_api_client: POST &amp;#x27;http://localhost:3003/user/&amp;#x27; json: {&amp;#x27;name&amp;#x27;: &amp;#x27;Jacqueline&amp;#x27;, &amp;#x27;username&amp;#x27;: &amp;#x27;ijohnson&amp;#x27;, &amp;#x27;email&amp;#x27;: &amp;#x27;bbruce@example.org&amp;#x27;, &amp;#x27;phone&amp;#x27;: None}\nINFO     user_api_client: Tracked created id=21\nINFO     validation_steps: ..Validating response code\nINFO     validation_steps: ..Validating response time is less then 500\nINFO     validation_steps: ..Validating content-type\nINFO     validation_steps: ..Validating response is JSON\nINFO     validation_steps: ..Validating response Schema\n\n---------------------------- Captured log teardown -----------------------------\nINFO     conftest: Running UserApiClient context cleanup\nINFO     user_api_client: Context cleaning...\nINFO     user_api_client: DELETE &amp;#x27;http://localhost:3003/user/21&amp;#x27;&#34;}], &#34;tests/test_api.py::test_create_api_user[empty_name]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Failed&#34;, &#34;testId&#34;: &#34;tests/test_api.py::test_create_api_user[empty_name]&#34;, &#34;duration&#34;: &#34;38 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Failed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_api.py::test_create_api_user[empty_name]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;38 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;FAILURE: check bool(False): Expected HTTP 400, got 201\ntest_api.py:78 in test_create_api_user() -&amp;gt; validate_response(\n../src/steps/validation_steps.py:111 in validate_response() -&amp;gt; validate_status_and_time(response, expected_status, max_response_ms)\n../src/steps/validation_steps.py:77 in validate_status_and_time() -&amp;gt; check.is_true(\n\n------------------------------------------------------------\nFailed Checks: 1\n\n------------------------------ Captured log setup ------------------------------\nINFO     conftest: Providing UserApiClient\n\n------------------------------ Captured log call -------------------------------\nINFO     user_api_client: POST &amp;#x27;http://localhost:3003/user/&amp;#x27; json: {&amp;#x27;name&amp;#x27;: &amp;#x27; &amp;#x27;, &amp;#x27;username&amp;#x27;: &amp;#x27;rwalsh&amp;#x27;, &amp;#x27;email&amp;#x27;: &amp;#x27;kmolina@example.org&amp;#x27;, &amp;#x27;phone&amp;#x27;: &amp;#x27;593.962.6395&amp;#x27;}\nINFO     user_api_client: Tracked created id=21\nINFO     validation_steps: ..Validating response code\nINFO     validation_steps: ..Validating response time is less then 500\nINFO     validation_steps: ..Validating content-type\nINFO     validation_steps: ..Validating response is JSON\nINFO     validation_steps: ..Validating response Schema\nINFO     validation_steps: ..Validating response is non-empty\n\n---------------------------- Captured log teardown -----------------------------\nINFO     conftest: Running UserApiClient context cleanup\nINFO     user_api_client: Context cleaning...\nINFO     user_api_client: DELETE &amp;#x27;http://localhost:3003/user/21&amp;#x27;&#34;}], &#34;tests/test_api.py::test_update_user_put[valid_full_update]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/test_api.py::test_update_user_put[valid_full_update]&#34;, &#34;duration&#34;: &#34;68 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_api.py::test_update_user_put[valid_full_update]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;68 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;------------------------------ Captured log setup ------------------------------\nINFO     conftest: Providing UserApiClient\n\n----------------------------- Captured stdout call -----------------------------\n[{&amp;#x27;name&amp;#x27;: &amp;#x27;Rodney&amp;#x27;, &amp;#x27;username&amp;#x27;: &amp;#x27;smithcorey&amp;#x27;, &amp;#x27;email&amp;#x27;: &amp;#x27;bryanholmes@example.org&amp;#x27;, &amp;#x27;phone&amp;#x27;: &amp;#x27;997.568.6689&amp;#x27;, &amp;#x27;id&amp;#x27;: 21}]\n[{&amp;#x27;name&amp;#x27;: &amp;#x27;Rodney&amp;#x27;, &amp;#x27;username&amp;#x27;: &amp;#x27;smithcorey&amp;#x27;, &amp;#x27;email&amp;#x27;: &amp;#x27;bryanholmes@example.org&amp;#x27;, &amp;#x27;phone&amp;#x27;: &amp;#x27;997.568.6689&amp;#x27;, &amp;#x27;id&amp;#x27;: 21}]\n\n------------------------------ Captured log call -------------------------------\nINFO     user_api_client: POST &amp;#x27;http://localhost:3003/user/&amp;#x27; json: {&amp;#x27;name&amp;#x27;: &amp;#x27;Rodney&amp;#x27;, &amp;#x27;username&amp;#x27;: &amp;#x27;smithcorey&amp;#x27;, &amp;#x27;email&amp;#x27;: &amp;#x27;bryanholmes@example.org&amp;#x27;, &amp;#x27;phone&amp;#x27;: &amp;#x27;997.568.6689&amp;#x27;}\nINFO     user_api_client: Tracked created id=21\nINFO     user_api_client: GET &amp;#x27;http://localhost:3003/user/&amp;#x27; params: {&amp;#x27;id&amp;#x27;: 21}\nINFO     user_api_client: PUT &amp;#x27;http://localhost:3003/user/21&amp;#x27; json: {&amp;#x27;name&amp;#x27;: &amp;#x27;Rodney&amp;#x27;, &amp;#x27;username&amp;#x27;: &amp;#x27;smithcorey&amp;#x27;, &amp;#x27;email&amp;#x27;: &amp;#x27;bryanholmes@example.org&amp;#x27;, &amp;#x27;phone&amp;#x27;: &amp;#x27;997.568.6689&amp;#x27;}\nINFO     validation_steps: ..Validating response code\nINFO     validation_steps: ..Validating response time is less then 500\nINFO     validation_steps: ..Validating content-type\nINFO     validation_steps: ..Validating response is JSON\nINFO     validation_steps: ..Validating response Schema\nINFO     validation_steps: ..Validating response is non-empty\n\n---------------------------- Captured log teardown -----------------------------\nINFO     conftest: Running UserApiClient context cleanup\nINFO     user_api_client: Context cleaning...\nINFO     user_api_client: DELETE &amp;#x27;http://localhost:3003/user/21&amp;#x27;&#34;}], &#34;tests/test_api.py::test_update_user_put[valid_partial_update]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/test_api.py::test_update_user_put[valid_partial_update]&#34;, &#34;duration&#34;: &#34;67 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_api.py::test_update_user_put[valid_partial_update]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;67 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;------------------------------ Captured log setup ------------------------------\nINFO     conftest: Providing UserApiClient\n\n----------------------------- Captured stdout call -----------------------------\n[{&amp;#x27;name&amp;#x27;: &amp;#x27;Laura&amp;#x27;, &amp;#x27;username&amp;#x27;: &amp;#x27;some_username&amp;#x27;, &amp;#x27;email&amp;#x27;: &amp;#x27;test@email.com&amp;#x27;, &amp;#x27;phone&amp;#x27;: &amp;#x27;001-972-672-5122&amp;#x27;, &amp;#x27;id&amp;#x27;: 21}]\n[{&amp;#x27;name&amp;#x27;: &amp;#x27;Laura&amp;#x27;, &amp;#x27;username&amp;#x27;: &amp;#x27;some_username&amp;#x27;, &amp;#x27;email&amp;#x27;: &amp;#x27;test@email.com&amp;#x27;, &amp;#x27;phone&amp;#x27;: &amp;#x27;001-972-672-5122&amp;#x27;, &amp;#x27;id&amp;#x27;: 21}]\n\n------------------------------ Captured log call -------------------------------\nINFO     user_api_client: POST &amp;#x27;http://localhost:3003/user/&amp;#x27; json: {&amp;#x27;name&amp;#x27;: &amp;#x27;Laura&amp;#x27;, &amp;#x27;username&amp;#x27;: &amp;#x27;some_username&amp;#x27;, &amp;#x27;email&amp;#x27;: &amp;#x27;test@email.com&amp;#x27;, &amp;#x27;phone&amp;#x27;: &amp;#x27;001-972-672-5122&amp;#x27;}\nINFO     user_api_client: Tracked created id=21\nINFO     user_api_client: GET &amp;#x27;http://localhost:3003/user/&amp;#x27; params: {&amp;#x27;id&amp;#x27;: 21}\nINFO     user_api_client: PUT &amp;#x27;http://localhost:3003/user/21&amp;#x27; json: {&amp;#x27;name&amp;#x27;: &amp;#x27;Laura&amp;#x27;, &amp;#x27;username&amp;#x27;: &amp;#x27;some_username&amp;#x27;, &amp;#x27;email&amp;#x27;: &amp;#x27;test@email.com&amp;#x27;, &amp;#x27;phone&amp;#x27;: &amp;#x27;001-972-672-5122&amp;#x27;}\nINFO     validation_steps: ..Validating response code\nINFO     validation_steps: ..Validating response time is less then 500\nINFO     validation_steps: ..Validating content-type\nINFO     validation_steps: ..Validating response is JSON\nINFO     validation_steps: ..Validating response Schema\nINFO     validation_steps: ..Validating response is non-empty\n\n---------------------------- Captured log teardown -----------------------------\nINFO     conftest: Running UserApiClient context cleanup\nINFO     user_api_client: Context cleaning...\nINFO     user_api_client: DELETE &amp;#x27;http://localhost:3003/user/21&amp;#x27;&#34;}], &#34;tests/test_api.py::test_update_user_put[invalid_email]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Failed&#34;, &#34;testId&#34;: &#34;tests/test_api.py::test_update_user_put[invalid_email]&#34;, &#34;duration&#34;: &#34;71 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Failed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_api.py::test_update_user_put[invalid_email]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;71 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;FAILURE: check bool(False): Expected HTTP {400, 422}, got 200\ntest_api.py:109 in test_update_user_put() -&amp;gt; updated = validate_response(\n../src/steps/validation_steps.py:111 in validate_response() -&amp;gt; validate_status_and_time(response, expected_status, max_response_ms)\n../src/steps/validation_steps.py:77 in validate_status_and_time() -&amp;gt; check.is_true(\n\n------------------------------------------------------------\nFailed Checks: 1\n\n------------------------------ Captured log setup ------------------------------\nINFO     conftest: Providing UserApiClient\n\n----------------------------- Captured stdout call -----------------------------\n[{&amp;#x27;name&amp;#x27;: &amp;#x27;Susan&amp;#x27;, &amp;#x27;username&amp;#x27;: &amp;#x27;sarah23&amp;#x27;, &amp;#x27;email&amp;#x27;: &amp;#x27;not-an-email&amp;#x27;, &amp;#x27;phone&amp;#x27;: &amp;#x27;+1-953-256-7667&amp;#x27;, &amp;#x27;id&amp;#x27;: 21}]\n[{&amp;#x27;name&amp;#x27;: &amp;#x27;Susan&amp;#x27;, &amp;#x27;username&amp;#x27;: &amp;#x27;sarah23&amp;#x27;, &amp;#x27;email&amp;#x27;: &amp;#x27;not-an-email&amp;#x27;, &amp;#x27;phone&amp;#x27;: &amp;#x27;+1-953-256-7667&amp;#x27;, &amp;#x27;id&amp;#x27;: 21}]\n\n------------------------------ Captured log call -------------------------------\nINFO     user_api_client: POST &amp;#x27;http://localhost:3003/user/&amp;#x27; json: {&amp;#x27;name&amp;#x27;: &amp;#x27;Susan&amp;#x27;, &amp;#x27;username&amp;#x27;: &amp;#x27;sarah23&amp;#x27;, &amp;#x27;email&amp;#x27;: &amp;#x27;not-an-email&amp;#x27;, &amp;#x27;phone&amp;#x27;: &amp;#x27;+1-953-256-7667&amp;#x27;}\nINFO     user_api_client: Tracked created id=21\nINFO     user_api_client: GET &amp;#x27;http://localhost:3003/user/&amp;#x27; params: {&amp;#x27;id&amp;#x27;: 21}\nINFO     user_api_client: PUT &amp;#x27;http://localhost:3003/user/21&amp;#x27; json: {&amp;#x27;name&amp;#x27;: &amp;#x27;Susan&amp;#x27;, &amp;#x27;username&amp;#x27;: &amp;#x27;sarah23&amp;#x27;, &amp;#x27;email&amp;#x27;: &amp;#x27;not-an-email&amp;#x27;, &amp;#x27;phone&amp;#x27;: &amp;#x27;+1-953-256-7667&amp;#x27;}\nINFO     validation_steps: ..Validating response code\nINFO     validation_steps: ..Validating response time is less then 500\nINFO     validation_steps: ..Validating content-type\nINFO     validation_steps: ..Validating response is JSON\nINFO     validation_steps: ..Validating response Schema\nINFO     validation_steps: ..Validating response is non-empty\n\n---------------------------- Captured log teardown -----------------------------\nINFO     conftest: Running UserApiClient context cleanup\nINFO     user_api_client: Context cleaning...\nINFO     user_api_client: DELETE &amp;#x27;http://localhost:3003/user/21&amp;#x27;&#34;}], &#34;tests/test_api.py::test_update_user_put[empty_username]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Failed&#34;, &#34;testId&#34;: &#34;tests/test_api.py::test_update_user_put[empty_username]&#34;, &#34;duration&#34;: &#34;67 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Failed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_api.py::test_update_user_put[empty_username]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;67 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;FAILURE: check bool(False): Expected HTTP 400, got 200\ntest_api.py:109 in test_update_user_put() -&amp;gt; updated = validate_response(\n../src/steps/validation_steps.py:111 in validate_response() -&amp;gt; validate_status_and_time(response, expected_status, max_response_ms)\n../src/steps/validation_steps.py:77 in validate_status_and_time() -&amp;gt; check.is_true(\n\n------------------------------------------------------------\nFailed Checks: 1\n\n------------------------------ Captured log setup ------------------------------\nINFO     conftest: Providing UserApiClient\n\n----------------------------- Captured stdout call -----------------------------\n[{&amp;#x27;name&amp;#x27;: &amp;#x27;Timothy&amp;#x27;, &amp;#x27;username&amp;#x27;: &amp;#x27;&amp;#x27;, &amp;#x27;email&amp;#x27;: &amp;#x27;kimberlypaul@example.com&amp;#x27;, &amp;#x27;phone&amp;#x27;: &amp;#x27;574-639-7511x066&amp;#x27;, &amp;#x27;id&amp;#x27;: 21}]\n[{&amp;#x27;name&amp;#x27;: &amp;#x27;Timothy&amp;#x27;, &amp;#x27;username&amp;#x27;: &amp;#x27;&amp;#x27;, &amp;#x27;email&amp;#x27;: &amp;#x27;kimberlypaul@example.com&amp;#x27;, &amp;#x27;phone&amp;#x27;: &amp;#x27;574-639-7511x066&amp;#x27;, &amp;#x27;id&amp;#x27;: 21}]\n\n------------------------------ Captured log call -------------------------------\nINFO     user_api_client: POST &amp;#x27;http://localhost:3003/user/&amp;#x27; json: {&amp;#x27;name&amp;#x27;: &amp;#x27;Timothy&amp;#x27;, &amp;#x27;username&amp;#x27;: &amp;#x27;&amp;#x27;, &amp;#x27;email&amp;#x27;: &amp;#x27;kimberlypaul@example.com&amp;#x27;, &amp;#x27;phone&amp;#x27;: &amp;#x27;574-639-7511x066&amp;#x27;}\nINFO     user_api_client: Tracked created id=21\nINFO     user_api_client: GET &amp;#x27;http://localhost:3003/user/&amp;#x27; params: {&amp;#x27;id&amp;#x27;: 21}\nINFO     user_api_client: PUT &amp;#x27;http://localhost:3003/user/21&amp;#x27; json: {&amp;#x27;name&amp;#x27;: &amp;#x27;Timothy&amp;#x27;, &amp;#x27;username&amp;#x27;: &amp;#x27;&amp;#x27;, &amp;#x27;email&amp;#x27;: &amp;#x27;kimberlypaul@example.com&amp;#x27;, &amp;#x27;phone&amp;#x27;: &amp;#x27;574-639-7511x066&amp;#x27;}\nINFO     validation_steps: ..Validating response code\nINFO     validation_steps: ..Validating response time is less then 500\nINFO     validation_steps: ..Validating content-type\nINFO     validation_steps: ..Validating response is JSON\nINFO     validation_steps: ..Validating response Schema\nINFO     validation_steps: ..Validating response is non-empty\n\n---------------------------- Captured log teardown -----------------------------\nINFO     conftest: Running UserApiClient context cleanup\nINFO     user_api_client: Context cleaning...\nINFO     user_api_client: DELETE &amp;#x27;http://localhost:3003/user/21&amp;#x27;&#34;}], &#34;tests/test_api.py::test_update_user_put[empty_name]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Failed&#34;, &#34;testId&#34;: &#34;tests/test_api.py::test_update_user_put[empty_name]&#34;, &#34;duration&#34;: &#34;70 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Failed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_api.py::test_update_user_put[empty_name]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;70 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;FAILURE: check bool(False): Expected HTTP 400, got 200\ntest_api.py:109 in test_update_user_put() -&amp;gt; updated = validate_response(\n../src/steps/validation_steps.py:111 in validate_response() -&amp;gt; validate_status_and_time(response, expected_status, max_response_ms)\n../src/steps/validation_steps.py:77 in validate_status_and_time() -&amp;gt; check.is_true(\n\n------------------------------------------------------------\nFailed Checks: 1\n\n------------------------------ Captured log setup ------------------------------\nINFO     conftest: Providing UserApiClient\n\n----------------------------- Captured stdout call -----------------------------\n[{&amp;#x27;name&amp;#x27;: &amp;#x27; &amp;#x27;, &amp;#x27;username&amp;#x27;: &amp;#x27;smithcynthia&amp;#x27;, &amp;#x27;email&amp;#x27;: &amp;#x27;bmckinney@example.org&amp;#x27;, &amp;#x27;phone&amp;#x27;: &amp;#x27;+1-804-662-3632&amp;#x27;, &amp;#x27;id&amp;#x27;: 21}]\n[{&amp;#x27;name&amp;#x27;: &amp;#x27; &amp;#x27;, &amp;#x27;username&amp;#x27;: &amp;#x27;smithcynthia&amp;#x27;, &amp;#x27;email&amp;#x27;: &amp;#x27;bmckinney@example.org&amp;#x27;, &amp;#x27;phone&amp;#x27;: &amp;#x27;+1-804-662-3632&amp;#x27;, &amp;#x27;id&amp;#x27;: 21}]\n\n------------------------------ Captured log call -------------------------------\nINFO     user_api_client: POST &amp;#x27;http://localhost:3003/user/&amp;#x27; json: {&amp;#x27;name&amp;#x27;: &amp;#x27; &amp;#x27;, &amp;#x27;username&amp;#x27;: &amp;#x27;smithcynthia&amp;#x27;, &amp;#x27;email&amp;#x27;: &amp;#x27;bmckinney@example.org&amp;#x27;, &amp;#x27;phone&amp;#x27;: &amp;#x27;+1-804-662-3632&amp;#x27;}\nINFO     user_api_client: Tracked created id=21\nINFO     user_api_client: GET &amp;#x27;http://localhost:3003/user/&amp;#x27; params: {&amp;#x27;id&amp;#x27;: 21}\nINFO     user_api_client: PUT &amp;#x27;http://localhost:3003/user/21&amp;#x27; json: {&amp;#x27;name&amp;#x27;: &amp;#x27; &amp;#x27;, &amp;#x27;username&amp;#x27;: &amp;#x27;smithcynthia&amp;#x27;, &amp;#x27;email&amp;#x27;: &amp;#x27;bmckinney@example.org&amp;#x27;, &amp;#x27;phone&amp;#x27;: &amp;#x27;+1-804-662-3632&amp;#x27;}\nINFO     validation_steps: ..Validating response code\nINFO     validation_steps: ..Validating response time is less then 500\nINFO     validation_steps: ..Validating content-type\nINFO     validation_steps: ..Validating response is JSON\nINFO     validation_steps: ..Validating response Schema\nINFO     validation_steps: ..Validating response is non-empty\n\n---------------------------- Captured log teardown -----------------------------\nINFO     conftest: Running UserApiClient context cleanup\nINFO     user_api_client: Context cleaning...\nINFO     user_api_client: DELETE &amp;#x27;http://localhost:3003/user/21&amp;#x27;&#34;}], &#34;tests/test_api.py::test_update_user_put[bad_phone]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Failed&#34;, &#34;testId&#34;: &#34;tests/test_api.py::test_update_user_put[bad_phone]&#34;, &#34;duration&#34;: &#34;67 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Failed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_api.py::test_update_user_put[bad_phone]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;67 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;FAILURE: check bool(False): Expected HTTP {400, 422}, got 200\ntest_api.py:109 in test_update_user_put() -&amp;gt; updated = validate_response(\n../src/steps/validation_steps.py:111 in validate_response() -&amp;gt; validate_status_and_time(response, expected_status, max_response_ms)\n../src/steps/validation_steps.py:77 in validate_status_and_time() -&amp;gt; check.is_true(\n\n------------------------------------------------------------\nFailed Checks: 1\n\n------------------------------ Captured log setup ------------------------------\nINFO     conftest: Providing UserApiClient\n\n----------------------------- Captured stdout call -----------------------------\n[{&amp;#x27;name&amp;#x27;: &amp;#x27;Edward&amp;#x27;, &amp;#x27;username&amp;#x27;: &amp;#x27;vdavis&amp;#x27;, &amp;#x27;email&amp;#x27;: &amp;#x27;patrickgarner@example.net&amp;#x27;, &amp;#x27;phone&amp;#x27;: &amp;#x27;bad&amp;#x27;, &amp;#x27;id&amp;#x27;: 21}]\n[{&amp;#x27;name&amp;#x27;: &amp;#x27;Edward&amp;#x27;, &amp;#x27;username&amp;#x27;: &amp;#x27;vdavis&amp;#x27;, &amp;#x27;email&amp;#x27;: &amp;#x27;patrickgarner@example.net&amp;#x27;, &amp;#x27;phone&amp;#x27;: &amp;#x27;bad&amp;#x27;, &amp;#x27;id&amp;#x27;: 21}]\n\n------------------------------ Captured log call -------------------------------\nINFO     user_api_client: POST &amp;#x27;http://localhost:3003/user/&amp;#x27; json: {&amp;#x27;name&amp;#x27;: &amp;#x27;Edward&amp;#x27;, &amp;#x27;username&amp;#x27;: &amp;#x27;vdavis&amp;#x27;, &amp;#x27;email&amp;#x27;: &amp;#x27;patrickgarner@example.net&amp;#x27;, &amp;#x27;phone&amp;#x27;: &amp;#x27;bad&amp;#x27;}\nINFO     user_api_client: Tracked created id=21\nINFO     user_api_client: GET &amp;#x27;http://localhost:3003/user/&amp;#x27; params: {&amp;#x27;id&amp;#x27;: 21}\nINFO     user_api_client: PUT &amp;#x27;http://localhost:3003/user/21&amp;#x27; json: {&amp;#x27;name&amp;#x27;: &amp;#x27;Edward&amp;#x27;, &amp;#x27;username&amp;#x27;: &amp;#x27;vdavis&amp;#x27;, &amp;#x27;email&amp;#x27;: &amp;#x27;patrickgarner@example.net&amp;#x27;, &amp;#x27;phone&amp;#x27;: &amp;#x27;bad&amp;#x27;}\nINFO     validation_steps: ..Validating response code\nINFO     validation_steps: ..Validating response time is less then 500\nINFO     validation_steps: ..Validating content-type\nINFO     validation_steps: ..Validating response is JSON\nINFO     validation_steps: ..Validating response Schema\nINFO     validation_steps: ..Validating response is non-empty\n\n---------------------------- Captured log teardown -----------------------------\nINFO     conftest: Running UserApiClient context cleanup\nINFO     user_api_client: Context cleaning...\nINFO     user_api_client: DELETE &amp;#x27;http://localhost:3003/user/21&amp;#x27;&#34;}], &#34;tests/test_api.py::test_delete_user[valid_delete_user]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/test_api.py::test_delete_user[valid_delete_user]&#34;, &#34;duration&#34;: &#34;62 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_api.py::test_delete_user[valid_delete_user]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;62 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;------------------------------ Captured log setup ------------------------------\nINFO     conftest: Providing UserApiClient\n\n------------------------------ Captured log call -------------------------------\nINFO     user_api_client: POST &amp;#x27;http://localhost:3003/user/&amp;#x27; json: {&amp;#x27;name&amp;#x27;: &amp;#x27;Hannah&amp;#x27;, &amp;#x27;username&amp;#x27;: &amp;#x27;cassandra77&amp;#x27;, &amp;#x27;email&amp;#x27;: &amp;#x27;barbaramitchell@example.org&amp;#x27;, &amp;#x27;phone&amp;#x27;: &amp;#x27;(995)375-7086x389&amp;#x27;}\nINFO     user_api_client: Tracked created id=21\nINFO     user_api_client: DELETE &amp;#x27;http://localhost:3003/user/21&amp;#x27;\nINFO     validation_steps: ..Validating response code\nINFO     validation_steps: ..Validating response time is less then 500\nINFO     validation_steps: ..Validating content-type\nINFO     user_api_client: GET &amp;#x27;http://localhost:3003/user/&amp;#x27; params: {&amp;#x27;id&amp;#x27;: 21}\nINFO     validation_steps: ..Validating response code\nINFO     validation_steps: ..Validating response time is less then 500\nINFO     validation_steps: ..Validating content-type\nINFO     validation_steps: ..Validating response is JSON\nINFO     validation_steps: ..Validating response Schema\nINFO     validation_steps: ..Validating response is empty\n\n---------------------------- Captured log teardown -----------------------------\nINFO     conftest: Running UserApiClient context cleanup\nINFO     user_api_client: Context cleaning...\nINFO     user_api_client: DELETE &amp;#x27;http://localhost:3003/user/21&amp;#x27;&#34;}], &#34;tests/test_api.py::test_end_2_end_api[valid_end_2_end]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/test_api.py::test_end_2_end_api[valid_end_2_end]&#34;, &#34;duration&#34;: &#34;89 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_api.py::test_end_2_end_api[valid_end_2_end]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;89 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;------------------------------ Captured log setup ------------------------------\nINFO     conftest: Providing UserApiClient\n\n------------------------------ Captured log call -------------------------------\nINFO     user_api_client: POST &amp;#x27;http://localhost:3003/user/&amp;#x27; json: {&amp;#x27;name&amp;#x27;: &amp;#x27;Ryan&amp;#x27;, &amp;#x27;username&amp;#x27;: &amp;#x27;robert16&amp;#x27;, &amp;#x27;email&amp;#x27;: &amp;#x27;fmorrison@example.org&amp;#x27;, &amp;#x27;phone&amp;#x27;: &amp;#x27;518-246-1318x4455&amp;#x27;}\nINFO     user_api_client: Tracked created id=21\nINFO     validation_steps: ..Validating response code\nINFO     validation_steps: ..Validating response time is less then 500\nINFO     validation_steps: ..Validating content-type\nINFO     validation_steps: ..Validating response is JSON\nINFO     validation_steps: ..Validating response Schema\nINFO     validation_steps: ..Validating response is non-empty\nINFO     user_api_client: PATCH &amp;#x27;http://localhost:3003/user/21&amp;#x27; json: {&amp;#x27;name&amp;#x27;: &amp;#x27;Ryan&amp;#x27;, &amp;#x27;username&amp;#x27;: &amp;#x27;updated_username&amp;#x27;, &amp;#x27;email&amp;#x27;: &amp;#x27;updatedtest@email.com&amp;#x27;, &amp;#x27;phone&amp;#x27;: &amp;#x27;518-246-1318x4455&amp;#x27;}\nINFO     validation_steps: ..Validating response code\nINFO     validation_steps: ..Validating response time is less then 500\nINFO     validation_steps: ..Validating content-type\nINFO     validation_steps: ..Validating response is JSON\nINFO     validation_steps: ..Validating response Schema\nINFO     validation_steps: ..Validating response is non-empty\nINFO     user_api_client: GET &amp;#x27;http://localhost:3003/user/&amp;#x27; params: {&amp;#x27;id&amp;#x27;: 21}\nINFO     validation_steps: ..Validating response code\nINFO     validation_steps: ..Validating response time is less then 500\nINFO     validation_steps: ..Validating content-type\nINFO     validation_steps: ..Validating response is JSON\nINFO     validation_steps: ..Validating response Schema\nINFO     validation_steps: ..Validating response is non-empty\nINFO     validation_steps: ..Validate user details were updated as expected\nINFO     user_api_client: DELETE &amp;#x27;http://localhost:3003/user/21&amp;#x27;\nINFO     validation_steps: ..Validating response code\nINFO     validation_steps: ..Validating response time is less then 500\nINFO     validation_steps: ..Validating content-type\nINFO     user_api_client: GET &amp;#x27;http://localhost:3003/user/&amp;#x27; params: {&amp;#x27;id&amp;#x27;: 21}\nINFO     validation_steps: ..Validating response code\nINFO     validation_steps: ..Validating response time is less then 500\nINFO     validation_steps: ..Validating content-type\nINFO     validation_steps: ..Validating response is JSON\nINFO     validation_steps: ..Validating response Schema\nINFO     validation_steps: ..Validating response is empty\n\n---------------------------- Captured log teardown -----------------------------\nINFO     conftest: Running UserApiClient context cleanup\nINFO     user_api_client: Context cleaning...\nINFO     user_api_client: DELETE &amp;#x27;http://localhost:3003/user/21&amp;#x27;&#34;}], &#34;tests/test_ui.py::test_create_new_user&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/test_ui.py::test_create_new_user&#34;, &#34;duration&#34;: &#34;00:00:12&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_ui.py::test_create_new_user&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:12&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;------------------------------ Captured log setup ------------------------------\nINFO     driver_factory: initiating f&amp;#x27;chrome&amp;#x27; webdriver\n\n------------------------------ Captured log call -------------------------------\nINFO     add_user_page: User navigates to ADD USER Page\nINFO     add_user_page: Filling user form with following details:UserTestData(name=&amp;#x27;Amanda&amp;#x27;, username=&amp;#x27;logan14&amp;#x27;, email=&amp;#x27;brian73@example.org&amp;#x27;, phone=&amp;#x27;510-706-8768x5128&amp;#x27;)\nINFO     add_user_page: ...Save USER details\nINFO     users_page: User navigates to Users Page\nINFO     users_page: User is selecting [Sort by DESC] for [ID] column\nINFO     users_page: Filter grid by username: [logan14] if present\nINFO     users_page: Getting users within the limit of 25 rows per page\nINFO     validation_steps: ..Validate that user object matches expected\n\n&#34;}], &#34;tests/test_ui.py::test_cancel_user_creation&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/test_ui.py::test_cancel_user_creation&#34;, &#34;duration&#34;: &#34;00:00:14&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_ui.py::test_cancel_user_creation&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:14&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;------------------------------ Captured log setup ------------------------------\nINFO     driver_factory: initiating f&amp;#x27;chrome&amp;#x27; webdriver\n\n------------------------------ Captured log call -------------------------------\nINFO     users_page: User navigates to Users Page\nINFO     users_page: User is selecting [Sort by DESC] for [ID] column\nINFO     add_user_page: User navigates to ADD USER Page\nINFO     add_user_page: Filling user form with following details:UserTestData(name=&amp;#x27;john12&amp;#x27;, username=&amp;#x27;wick1&amp;#x27;, email=&amp;#x27;test@test.com&amp;#x27;, phone=&amp;#x27;1234567&amp;#x27;)\nINFO     base_page: ...Cancel USER update\nINFO     users_page: User navigates to Users Page\nINFO     users_page: User is selecting [Sort by DESC] for [ID] column\nINFO     validation_steps: ..Validate that user object matches expected\n\n&#34;}], &#34;tests/test_ui.py::test_user_can_pick_rows_per_page[25]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/test_ui.py::test_user_can_pick_rows_per_page[25]&#34;, &#34;duration&#34;: &#34;00:00:09&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_ui.py::test_user_can_pick_rows_per_page[25]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:09&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;------------------------------ Captured log setup ------------------------------\nINFO     driver_factory: initiating f&amp;#x27;chrome&amp;#x27; webdriver\n\n------------------------------ Captured log call -------------------------------\nINFO     users_page: User navigates to Users Page\nINFO     users_page: Getting users within the limit of 25 rows per page\nINFO     test_ui: Validate number of rows per page are displayed correctly\n\n&#34;}], &#34;tests/test_ui.py::test_user_can_pick_rows_per_page[50]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/test_ui.py::test_user_can_pick_rows_per_page[50]&#34;, &#34;duration&#34;: &#34;00:00:09&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_ui.py::test_user_can_pick_rows_per_page[50]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:09&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;------------------------------ Captured log setup ------------------------------\nINFO     driver_factory: initiating f&amp;#x27;chrome&amp;#x27; webdriver\n\n------------------------------ Captured log call -------------------------------\nINFO     users_page: User navigates to Users Page\nINFO     users_page: Getting users within the limit of 50 rows per page\nINFO     test_ui: Validate number of rows per page are displayed correctly\n\n&#34;}], &#34;tests/test_ui.py::test_user_can_pick_rows_per_page[100]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/test_ui.py::test_user_can_pick_rows_per_page[100]&#34;, &#34;duration&#34;: &#34;00:00:08&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_ui.py::test_user_can_pick_rows_per_page[100]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:08&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;------------------------------ Captured log setup ------------------------------\nINFO     driver_factory: initiating f&amp;#x27;chrome&amp;#x27; webdriver\n\n------------------------------ Captured log call -------------------------------\nINFO     users_page: User navigates to Users Page\nINFO     users_page: Getting users within the limit of 100 rows per page\nINFO     test_ui: Validate number of rows per page are displayed correctly\n\n&#34;}], &#34;tests/test_ui.py::test_user_can_be_updated&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/test_ui.py::test_user_can_be_updated&#34;, &#34;duration&#34;: &#34;00:00:13&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_ui.py::test_user_can_be_updated&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:13&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;------------------------------ Captured log setup ------------------------------\nINFO     driver_factory: initiating f&amp;#x27;chrome&amp;#x27; webdriver\n\n------------------------------ Captured log call -------------------------------\nINFO     users_page: User navigates to Users Page\nINFO     users_page: User is selecting [Sort by DESC] for [ID] column\nINFO     update_user_page: Updating fallowing user details: UserTestData(name=&amp;#x27;John&amp;#x27;, username=None, email=&amp;#x27;wick@wick.com&amp;#x27;, phone=None)\nINFO     update_user_page: ...Update USER\nINFO     users_page: User navigates to Users Page\nINFO     users_page: User is selecting [Sort by DESC] for [ID] column\nINFO     validation_steps: ..Validate user details were updated as expected\n\n&#34;}], &#34;tests/test_ui.py::test_user_cancel_update&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/test_ui.py::test_user_cancel_update&#34;, &#34;duration&#34;: &#34;00:00:13&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_ui.py::test_user_cancel_update&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:13&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;------------------------------ Captured log setup ------------------------------\nINFO     driver_factory: initiating f&amp;#x27;chrome&amp;#x27; webdriver\n\n------------------------------ Captured log call -------------------------------\nINFO     users_page: User navigates to Users Page\nINFO     users_page: User is selecting [Sort by DESC] for [ID] column\nINFO     update_user_page: Updating fallowing user details: UserTestData(name=&amp;#x27;John&amp;#x27;, username=None, email=&amp;#x27;wick@wick.com&amp;#x27;, phone=None)\nINFO     base_page: ...Cancel USER update\nINFO     users_page: User navigates to Users Page\nINFO     users_page: User is selecting [Sort by DESC] for [ID] column\nINFO     validation_steps: ..Validate user details were updated as expected\n\n&#34;}], &#34;tests/test_ui.py::test_user_are_unique_by_details&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Failed&#34;, &#34;testId&#34;: &#34;tests/test_ui.py::test_user_are_unique_by_details&#34;, &#34;duration&#34;: &#34;00:00:19&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Failed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_ui.py::test_user_are_unique_by_details&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:19&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;FAILURE: check not bool(True): Users are identical user1: UsersRowData(id=&amp;#x27;22&amp;#x27;, name=&amp;#x27;John1&amp;#x27;, username=&amp;#x27;jw&amp;#x27;, email=&amp;#x27;wick1@wick.com&amp;#x27;, phone=&amp;#x27;12345678&amp;#x27;, edit=&amp;lt;selenium.webdriver.remote.webelement.WebElement (session=&amp;quot;ac62a7951b3caa765ae942f9cb7bc4c5&amp;quot;, element=&amp;quot;f.71DFD179AD7AAB6D5ED4258DDBE2937A.d.F3328B135FBE637B3DBEF479CB602C0D.e.79&amp;quot;)&amp;gt;, remove=&amp;lt;selenium.webdriver.remote.webelement.WebElement (session=&amp;quot;ac62a7951b3caa765ae942f9cb7bc4c5&amp;quot;, element=&amp;quot;f.71DFD179AD7AAB6D5ED4258DDBE2937A.d.F3328B135FBE637B3DBEF479CB602C0D.e.80&amp;quot;)&amp;gt;) \n user2: UsersRowData(id=&amp;#x27;23&amp;#x27;, name=&amp;#x27;John1&amp;#x27;, username=&amp;#x27;jw&amp;#x27;, email=&amp;#x27;wick1@wick.com&amp;#x27;, phone=&amp;#x27;12345678&amp;#x27;, edit=&amp;lt;selenium.webdriver.remote.webelement.WebElement (session=&amp;quot;ac62a7951b3caa765ae942f9cb7bc4c5&amp;quot;, element=&amp;quot;f.71DFD179AD7AAB6D5ED4258DDBE2937A.d.D1E9D9BCA95AE418805067927E612D39.e.314&amp;quot;)&amp;gt;, remove=&amp;lt;selenium.webdriver.remote.webelement.WebElement (session=&amp;quot;ac62a7951b3caa765ae942f9cb7bc4c5&amp;quot;, element=&amp;quot;f.71DFD179AD7AAB6D5ED4258DDBE2937A.d.D1E9D9BCA95AE418805067927E612D39.e.315&amp;quot;)&amp;gt;)\ntest_ui.py:103 in test_user_are_unique_by_details() -&amp;gt; validate_users_not_matching(first_created_user[0], second_created_user[0])\n../src/steps/validation_steps.py:23 in validate_users_not_matching() -&amp;gt; check.is_false(same_fields, f&amp;#x27;Users are identical user1: {expected_user!r} \\n user2: {actual_user!r}&amp;#x27;)\n\n------------------------------------------------------------\nFailed Checks: 1\n\n------------------------------ Captured log setup ------------------------------\nINFO     driver_factory: initiating f&amp;#x27;chrome&amp;#x27; webdriver\n\n------------------------------ Captured log call -------------------------------\nINFO     add_user_page: User navigates to ADD USER Page\nINFO     add_user_page: Filling user form with following details:UserTestData(name=&amp;#x27;John1&amp;#x27;, username=&amp;#x27;jw&amp;#x27;, email=&amp;#x27;wick1@wick.com&amp;#x27;, phone=&amp;#x27;12345678&amp;#x27;)\nINFO     add_user_page: ...Save USER details\nINFO     users_page: User navigates to Users Page\nINFO     users_page: User is selecting [Sort by DESC] for [ID] column\nINFO     users_page: Filter grid by username: [jw] if present\nINFO     users_page: Getting users within the limit of 25 rows per page\nINFO     add_user_page: User navigates to ADD USER Page\nINFO     add_user_page: Filling user form with following details:UserTestData(name=&amp;#x27;John1&amp;#x27;, username=&amp;#x27;jw&amp;#x27;, email=&amp;#x27;wick1@wick.com&amp;#x27;, phone=&amp;#x27;12345678&amp;#x27;)\nINFO     add_user_page: ...Save USER details\nINFO     users_page: User navigates to Users Page\nINFO     users_page: User is selecting [Sort by DESC] for [ID] column\nINFO     users_page: Filter grid by username: [jw] if present\nINFO     users_page: Getting users within the limit of 25 rows per page\nINFO     validation_steps: ..Validate that user object is not identical to expected\n\n&#34;}]}, &#34;renderCollapsed&#34;: [&#34;passed&#34;], &#34;initialSort&#34;: &#34;result&#34;, &#34;title&#34;: &#34;report.html&#34;}"></div>
+    <script>
+      (function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
+const { getCollapsedCategory, setCollapsedIds } = require('./storage.js')
+
+class DataManager {
+    setManager(data) {
+        const collapsedCategories = [...getCollapsedCategory(data.renderCollapsed)]
+        const collapsedIds = []
+        const tests = Object.values(data.tests).flat().map((test, index) => {
+            const collapsed = collapsedCategories.includes(test.result.toLowerCase())
+            const id = `test_${index}`
+            if (collapsed) {
+                collapsedIds.push(id)
+            }
+            return {
+                ...test,
+                id,
+                collapsed,
+            }
+        })
+        const dataBlob = { ...data, tests }
+        this.data = { ...dataBlob }
+        this.renderData = { ...dataBlob }
+        setCollapsedIds(collapsedIds)
+    }
+
+    get allData() {
+        return { ...this.data }
+    }
+
+    resetRender() {
+        this.renderData = { ...this.data }
+    }
+
+    setRender(data) {
+        this.renderData.tests = [...data]
+    }
+
+    toggleCollapsedItem(id) {
+        this.renderData.tests = this.renderData.tests.map((test) =>
+            test.id === id ? { ...test, collapsed: !test.collapsed } : test,
+        )
+    }
+
+    set allCollapsed(collapsed) {
+        this.renderData = { ...this.renderData, tests: [...this.renderData.tests.map((test) => (
+            { ...test, collapsed }
+        ))] }
+    }
+
+    get testSubset() {
+        return [...this.renderData.tests]
+    }
+
+    get environment() {
+        return this.renderData.environment
+    }
+
+    get initialSort() {
+        return this.data.initialSort
+    }
+}
+
+module.exports = {
+    manager: new DataManager(),
+}
+
+},{"./storage.js":8}],2:[function(require,module,exports){
+const mediaViewer = require('./mediaviewer.js')
+const templateEnvRow = document.getElementById('template_environment_row')
+const templateResult = document.getElementById('template_results-table__tbody')
+
+function htmlToElements(html) {
+    const temp = document.createElement('template')
+    temp.innerHTML = html
+    return temp.content.childNodes
+}
+
+const find = (selector, elem) => {
+    if (!elem) {
+        elem = document
+    }
+    return elem.querySelector(selector)
+}
+
+const findAll = (selector, elem) => {
+    if (!elem) {
+        elem = document
+    }
+    return [...elem.querySelectorAll(selector)]
+}
+
+const dom = {
+    getStaticRow: (key, value) => {
+        const envRow = templateEnvRow.content.cloneNode(true)
+        const isObj = typeof value === 'object' && value !== null
+        const values = isObj ? Object.keys(value).map((k) => `${k}: ${value[k]}`) : null
+
+        const valuesElement = htmlToElements(
+            values ? `<ul>${values.map((val) => `<li>${val}</li>`).join('')}<ul>` : `<div>${value}</div>`)[0]
+        const td = findAll('td', envRow)
+        td[0].textContent = key
+        td[1].appendChild(valuesElement)
+
+        return envRow
+    },
+    getResultTBody: ({ testId, id, log, extras, resultsTableRow, tableHtml, result, collapsed }) => {
+        const resultBody = templateResult.content.cloneNode(true)
+        resultBody.querySelector('tbody').classList.add(result.toLowerCase())
+        resultBody.querySelector('tbody').id = testId
+        resultBody.querySelector('.collapsible').dataset.id = id
+
+        resultsTableRow.forEach((html) => {
+            const t = document.createElement('template')
+            t.innerHTML = html
+            resultBody.querySelector('.collapsible').appendChild(t.content)
+        })
+
+        if (log) {
+            // Wrap lines starting with "E" with span.error to color those lines red
+            const wrappedLog = log.replace(/^E.*$/gm, (match) => `<span class="error">${match}</span>`)
+            resultBody.querySelector('.log').innerHTML = wrappedLog
+        } else {
+            resultBody.querySelector('.log').remove()
+        }
+
+        if (collapsed) {
+            resultBody.querySelector('.collapsible > td')?.classList.add('collapsed')
+            resultBody.querySelector('.extras-row').classList.add('hidden')
+        } else {
+            resultBody.querySelector('.collapsible > td')?.classList.remove('collapsed')
+        }
+
+        const media = []
+        extras?.forEach(({ name, format_type, content }) => {
+            if (['image', 'video'].includes(format_type)) {
+                media.push({ path: content, name, format_type })
+            }
+
+            if (format_type === 'html') {
+                resultBody.querySelector('.extraHTML').insertAdjacentHTML('beforeend', `<div>${content}</div>`)
+            }
+        })
+        mediaViewer.setup(resultBody, media)
+
+        // Add custom html from the pytest_html_results_table_html hook
+        tableHtml?.forEach((item) => {
+            resultBody.querySelector('td[class="extra"]').insertAdjacentHTML('beforeend', item)
+        })
+
+        return resultBody
+    },
+}
+
+module.exports = {
+    dom,
+    htmlToElements,
+    find,
+    findAll,
+}
+
+},{"./mediaviewer.js":6}],3:[function(require,module,exports){
+const { manager } = require('./datamanager.js')
+const { doSort } = require('./sort.js')
+const storageModule = require('./storage.js')
+
+const getFilteredSubSet = (filter) =>
+    manager.allData.tests.filter(({ result }) => filter.includes(result.toLowerCase()))
+
+const doInitFilter = () => {
+    const currentFilter = storageModule.getVisible()
+    const filteredSubset = getFilteredSubSet(currentFilter)
+    manager.setRender(filteredSubset)
+}
+
+const doFilter = (type, show) => {
+    if (show) {
+        storageModule.showCategory(type)
+    } else {
+        storageModule.hideCategory(type)
+    }
+
+    const currentFilter = storageModule.getVisible()
+    const filteredSubset = getFilteredSubSet(currentFilter)
+    manager.setRender(filteredSubset)
+
+    const sortColumn = storageModule.getSort()
+    doSort(sortColumn, true)
+}
+
+module.exports = {
+    doFilter,
+    doInitFilter,
+}
+
+},{"./datamanager.js":1,"./sort.js":7,"./storage.js":8}],4:[function(require,module,exports){
+const { redraw, bindEvents, renderStatic } = require('./main.js')
+const { doInitFilter } = require('./filter.js')
+const { doInitSort } = require('./sort.js')
+const { manager } = require('./datamanager.js')
+const data = JSON.parse(document.getElementById('data-container').dataset.jsonblob)
+
+function init() {
+    manager.setManager(data)
+    doInitFilter()
+    doInitSort()
+    renderStatic()
+    redraw()
+    bindEvents()
+}
+
+init()
+
+},{"./datamanager.js":1,"./filter.js":3,"./main.js":5,"./sort.js":7}],5:[function(require,module,exports){
+const { dom, find, findAll } = require('./dom.js')
+const { manager } = require('./datamanager.js')
+const { doSort } = require('./sort.js')
+const { doFilter } = require('./filter.js')
+const {
+    getVisible,
+    getCollapsedIds,
+    setCollapsedIds,
+    getSort,
+    getSortDirection,
+    possibleFilters,
+} = require('./storage.js')
+
+const removeChildren = (node) => {
+    while (node.firstChild) {
+        node.removeChild(node.firstChild)
+    }
+}
+
+const renderStatic = () => {
+    const renderEnvironmentTable = () => {
+        const environment = manager.environment
+        const rows = Object.keys(environment).map((key) => dom.getStaticRow(key, environment[key]))
+        const table = document.getElementById('environment')
+        removeChildren(table)
+        rows.forEach((row) => table.appendChild(row))
+    }
+    renderEnvironmentTable()
+}
+
+const addItemToggleListener = (elem) => {
+    elem.addEventListener('click', ({ target }) => {
+        const id = target.parentElement.dataset.id
+        manager.toggleCollapsedItem(id)
+
+        const collapsedIds = getCollapsedIds()
+        if (collapsedIds.includes(id)) {
+            const updated = collapsedIds.filter((item) => item !== id)
+            setCollapsedIds(updated)
+        } else {
+            collapsedIds.push(id)
+            setCollapsedIds(collapsedIds)
+        }
+        redraw()
+    })
+}
+
+const renderContent = (tests) => {
+    const sortAttr = getSort(manager.initialSort)
+    const sortAsc = JSON.parse(getSortDirection())
+    const rows = tests.map(dom.getResultTBody)
+    const table = document.getElementById('results-table')
+    const tableHeader = document.getElementById('results-table-head')
+
+    const newTable = document.createElement('table')
+    newTable.id = 'results-table'
+
+    // remove all sorting classes and set the relevant
+    findAll('.sortable', tableHeader).forEach((elem) => elem.classList.remove('asc', 'desc'))
+    tableHeader.querySelector(`.sortable[data-column-type="${sortAttr}"]`)?.classList.add(sortAsc ? 'desc' : 'asc')
+    newTable.appendChild(tableHeader)
+
+    if (!rows.length) {
+        const emptyTable = document.getElementById('template_results-table__body--empty').content.cloneNode(true)
+        newTable.appendChild(emptyTable)
+    } else {
+        rows.forEach((row) => {
+            if (!!row) {
+                findAll('.collapsible td:not(.col-links', row).forEach(addItemToggleListener)
+                find('.logexpander', row).addEventListener('click',
+                    (evt) => evt.target.parentNode.classList.toggle('expanded'),
+                )
+                newTable.appendChild(row)
+            }
+        })
+    }
+
+    table.replaceWith(newTable)
+}
+
+const renderDerived = () => {
+    const currentFilter = getVisible()
+    possibleFilters.forEach((result) => {
+        const input = document.querySelector(`input[data-test-result="${result}"]`)
+        input.checked = currentFilter.includes(result)
+    })
+}
+
+const bindEvents = () => {
+    const filterColumn = (evt) => {
+        const { target: element } = evt
+        const { testResult } = element.dataset
+
+        doFilter(testResult, element.checked)
+        const collapsedIds = getCollapsedIds()
+        const updated = manager.renderData.tests.map((test) => {
+            return {
+                ...test,
+                collapsed: collapsedIds.includes(test.id),
+            }
+        })
+        manager.setRender(updated)
+        redraw()
+    }
+
+    const header = document.getElementById('environment-header')
+    header.addEventListener('click', () => {
+        const table = document.getElementById('environment')
+        table.classList.toggle('hidden')
+        header.classList.toggle('collapsed')
+    })
+
+    findAll('input[name="filter_checkbox"]').forEach((elem) => {
+        elem.addEventListener('click', filterColumn)
+    })
+
+    findAll('.sortable').forEach((elem) => {
+        elem.addEventListener('click', (evt) => {
+            const { target: element } = evt
+            const { columnType } = element.dataset
+            doSort(columnType)
+            redraw()
+        })
+    })
+
+    document.getElementById('show_all_details').addEventListener('click', () => {
+        manager.allCollapsed = false
+        setCollapsedIds([])
+        redraw()
+    })
+    document.getElementById('hide_all_details').addEventListener('click', () => {
+        manager.allCollapsed = true
+        const allIds = manager.renderData.tests.map((test) => test.id)
+        setCollapsedIds(allIds)
+        redraw()
+    })
+}
+
+const redraw = () => {
+    const { testSubset } = manager
+
+    renderContent(testSubset)
+    renderDerived()
+}
+
+module.exports = {
+    redraw,
+    bindEvents,
+    renderStatic,
+}
+
+},{"./datamanager.js":1,"./dom.js":2,"./filter.js":3,"./sort.js":7,"./storage.js":8}],6:[function(require,module,exports){
+class MediaViewer {
+    constructor(assets) {
+        this.assets = assets
+        this.index = 0
+    }
+
+    nextActive() {
+        this.index = this.index === this.assets.length - 1 ? 0 : this.index + 1
+        return [this.activeFile, this.index]
+    }
+
+    prevActive() {
+        this.index = this.index === 0 ? this.assets.length - 1 : this.index -1
+        return [this.activeFile, this.index]
+    }
+
+    get currentIndex() {
+        return this.index
+    }
+
+    get activeFile() {
+        return this.assets[this.index]
+    }
+}
+
+
+const setup = (resultBody, assets) => {
+    if (!assets.length) {
+        resultBody.querySelector('.media').classList.add('hidden')
+        return
+    }
+
+    const mediaViewer = new MediaViewer(assets)
+    const container = resultBody.querySelector('.media-container')
+    const leftArrow = resultBody.querySelector('.media-container__nav--left')
+    const rightArrow = resultBody.querySelector('.media-container__nav--right')
+    const mediaName = resultBody.querySelector('.media__name')
+    const counter = resultBody.querySelector('.media__counter')
+    const imageEl = resultBody.querySelector('img')
+    const sourceEl = resultBody.querySelector('source')
+    const videoEl = resultBody.querySelector('video')
+
+    const setImg = (media, index) => {
+        if (media?.format_type === 'image') {
+            imageEl.src = media.path
+
+            imageEl.classList.remove('hidden')
+            videoEl.classList.add('hidden')
+        } else if (media?.format_type === 'video') {
+            sourceEl.src = media.path
+
+            videoEl.classList.remove('hidden')
+            imageEl.classList.add('hidden')
+        }
+
+        mediaName.innerText = media?.name
+        counter.innerText = `${index + 1} / ${assets.length}`
+    }
+    setImg(mediaViewer.activeFile, mediaViewer.currentIndex)
+
+    const moveLeft = () => {
+        const [media, index] = mediaViewer.prevActive()
+        setImg(media, index)
+    }
+    const doRight = () => {
+        const [media, index] = mediaViewer.nextActive()
+        setImg(media, index)
+    }
+    const openImg = () => {
+        window.open(mediaViewer.activeFile.path, '_blank')
+    }
+    if (assets.length === 1) {
+        container.classList.add('media-container--fullscreen')
+    } else {
+        leftArrow.addEventListener('click', moveLeft)
+        rightArrow.addEventListener('click', doRight)
+    }
+    imageEl.addEventListener('click', openImg)
+}
+
+module.exports = {
+    setup,
+}
+
+},{}],7:[function(require,module,exports){
+const { manager } = require('./datamanager.js')
+const storageModule = require('./storage.js')
+
+const genericSort = (list, key, ascending, customOrder) => {
+    let sorted
+    if (customOrder) {
+        sorted = list.sort((a, b) => {
+            const aValue = a.result.toLowerCase()
+            const bValue = b.result.toLowerCase()
+
+            const aIndex = customOrder.findIndex((item) => item.toLowerCase() === aValue)
+            const bIndex = customOrder.findIndex((item) => item.toLowerCase() === bValue)
+
+            // Compare the indices to determine the sort order
+            return aIndex - bIndex
+        })
+    } else {
+        sorted = list.sort((a, b) => a[key] === b[key] ? 0 : a[key] > b[key] ? 1 : -1)
+    }
+
+    if (ascending) {
+        sorted.reverse()
+    }
+    return sorted
+}
+
+const durationSort = (list, ascending) => {
+    const parseDuration = (duration) => {
+        if (duration.includes(':')) {
+            // If it's in the format "HH:mm:ss"
+            const [hours, minutes, seconds] = duration.split(':').map(Number)
+            return (hours * 3600 + minutes * 60 + seconds) * 1000
+        } else {
+            // If it's in the format "nnn ms"
+            return parseInt(duration)
+        }
+    }
+    const sorted = list.sort((a, b) => parseDuration(a['duration']) - parseDuration(b['duration']))
+    if (ascending) {
+        sorted.reverse()
+    }
+    return sorted
+}
+
+const doInitSort = () => {
+    const type = storageModule.getSort(manager.initialSort)
+    const ascending = storageModule.getSortDirection()
+    const list = manager.testSubset
+    const initialOrder = ['Error', 'Failed', 'Rerun', 'XFailed', 'XPassed', 'Skipped', 'Passed']
+
+    storageModule.setSort(type)
+    storageModule.setSortDirection(ascending)
+
+    if (type?.toLowerCase() === 'original') {
+        manager.setRender(list)
+    } else {
+        let sortedList
+        switch (type) {
+        case 'duration':
+            sortedList = durationSort(list, ascending)
+            break
+        case 'result':
+            sortedList = genericSort(list, type, ascending, initialOrder)
+            break
+        default:
+            sortedList = genericSort(list, type, ascending)
+            break
+        }
+        manager.setRender(sortedList)
+    }
+}
+
+const doSort = (type, skipDirection) => {
+    const newSortType = storageModule.getSort(manager.initialSort) !== type
+    const currentAsc = storageModule.getSortDirection()
+    let ascending
+    if (skipDirection) {
+        ascending = currentAsc
+    } else {
+        ascending = newSortType ? false : !currentAsc
+    }
+    storageModule.setSort(type)
+    storageModule.setSortDirection(ascending)
+
+    const list = manager.testSubset
+    const sortedList = type === 'duration' ? durationSort(list, ascending) : genericSort(list, type, ascending)
+    manager.setRender(sortedList)
+}
+
+module.exports = {
+    doInitSort,
+    doSort,
+}
+
+},{"./datamanager.js":1,"./storage.js":8}],8:[function(require,module,exports){
+const possibleFilters = [
+    'passed',
+    'skipped',
+    'failed',
+    'error',
+    'xfailed',
+    'xpassed',
+    'rerun',
+]
+
+const getVisible = () => {
+    const url = new URL(window.location.href)
+    const settings = new URLSearchParams(url.search).get('visible')
+    const lower = (item) => {
+        const lowerItem = item.toLowerCase()
+        if (possibleFilters.includes(lowerItem)) {
+            return lowerItem
+        }
+        return null
+    }
+    return settings === null ?
+        possibleFilters :
+        [...new Set(settings?.split(',').map(lower).filter((item) => item))]
+}
+
+const hideCategory = (categoryToHide) => {
+    const url = new URL(window.location.href)
+    const visibleParams = new URLSearchParams(url.search).get('visible')
+    const currentVisible = visibleParams ? visibleParams.split(',') : [...possibleFilters]
+    const settings = [...new Set(currentVisible)].filter((f) => f !== categoryToHide).join(',')
+
+    url.searchParams.set('visible', settings)
+    window.history.pushState({}, null, unescape(url.href))
+}
+
+const showCategory = (categoryToShow) => {
+    if (typeof window === 'undefined') {
+        return
+    }
+    const url = new URL(window.location.href)
+    const currentVisible = new URLSearchParams(url.search).get('visible')?.split(',').filter(Boolean) ||
+        [...possibleFilters]
+    const settings = [...new Set([categoryToShow, ...currentVisible])]
+    const noFilter = possibleFilters.length === settings.length || !settings.length
+
+    noFilter ? url.searchParams.delete('visible') : url.searchParams.set('visible', settings.join(','))
+    window.history.pushState({}, null, unescape(url.href))
+}
+
+const getSort = (initialSort) => {
+    const url = new URL(window.location.href)
+    let sort = new URLSearchParams(url.search).get('sort')
+    if (!sort) {
+        sort = initialSort || 'result'
+    }
+    return sort
+}
+
+const setSort = (type) => {
+    const url = new URL(window.location.href)
+    url.searchParams.set('sort', type)
+    window.history.pushState({}, null, unescape(url.href))
+}
+
+const getCollapsedCategory = (renderCollapsed) => {
+    let categories
+    if (typeof window !== 'undefined') {
+        const url = new URL(window.location.href)
+        const collapsedItems = new URLSearchParams(url.search).get('collapsed')
+        switch (true) {
+        case !renderCollapsed && collapsedItems === null:
+            categories = ['passed']
+            break
+        case collapsedItems?.length === 0 || /^["']{2}$/.test(collapsedItems):
+            categories = []
+            break
+        case /^all$/.test(collapsedItems) || collapsedItems === null && /^all$/.test(renderCollapsed):
+            categories = [...possibleFilters]
+            break
+        default:
+            categories = collapsedItems?.split(',').map((item) => item.toLowerCase()) || renderCollapsed
+            break
+        }
+    } else {
+        categories = []
+    }
+    return categories
+}
+
+const getSortDirection = () => JSON.parse(sessionStorage.getItem('sortAsc')) || false
+const setSortDirection = (ascending) => sessionStorage.setItem('sortAsc', ascending)
+
+const getCollapsedIds = () => JSON.parse(sessionStorage.getItem('collapsedIds')) || []
+const setCollapsedIds = (list) => sessionStorage.setItem('collapsedIds', JSON.stringify(list))
+
+module.exports = {
+    getVisible,
+    hideCategory,
+    showCategory,
+    getCollapsedIds,
+    setCollapsedIds,
+    getSort,
+    setSort,
+    getSortDirection,
+    setSortDirection,
+    getCollapsedCategory,
+    possibleFilters,
+}
+
+},{}]},{},[4]);
+    </script>
+  </footer>
+</html>
